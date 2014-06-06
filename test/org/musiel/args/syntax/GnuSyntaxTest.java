@@ -19,7 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
-import org.musiel.args.syntax.Syntax.ParseResult;
+import org.musiel.args.Result;
 
 public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 
@@ -88,19 +88,17 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 	@ Test
 	public void testAmbiguous() throws ParserException {
 		final Set< Option> options = new HashSet<>( this.options);
-		final Option optionI = this.option( false, true, true, true, "--ignore", "-I");
-		final Option optionF = this.option( false, true, true, true, "--ignore-file", "-F");
-		options.add( optionI);
-		options.add( optionF);
+		options.add( this.option( false, true, true, true, "--ignore", "-I"));
+		options.add( this.option( false, true, true, true, "--ignore-file", "-F"));
 
-		ParseResult result = this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file");
-		Assert.assertArrayEquals( new String[]{ "ignored"}, result.getOptionArguments( optionI).toArray());
-		Assert.assertArrayEquals( new String[]{ "ignored-file"}, result.getOptionArguments( optionF).toArray());
+		Result result = this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file");
+		Assert.assertArrayEquals( new String[]{ "ignored"}, result.getArguments( "-I").toArray());
+		Assert.assertArrayEquals( new String[]{ "ignored-file"}, result.getArguments( "-F").toArray());
 
 		result = this.syntax.parse( options, "--ignore", "ignored", "--ignore-=ignored-file");
-		Assert.assertArrayEquals( new String[]{ "ignored"}, result.getOptionArguments( optionI).toArray());
-		Assert.assertArrayEquals( new String[]{ "ignored-file"}, result.getOptionArguments( optionF).toArray());
-		Assert.assertArrayEquals( new String[]{ "--ignore-file"}, result.getOptionNames( optionF).toArray());
+		Assert.assertArrayEquals( new String[]{ "ignored"}, result.getArguments( "-I").toArray());
+		Assert.assertArrayEquals( new String[]{ "ignored-file"}, result.getArguments( "-F").toArray());
+		Assert.assertArrayEquals( new String[]{ "--ignore-file"}, result.getNames( "-F").toArray());
 
 		this.testExceptionalParse( AmbiguousOptionException.class, "ambiguous", options, "--ignore", "ignored", "--ignor=ignored-file");
 	}
@@ -108,38 +106,26 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 	@ Test
 	public void testParseOptionalGnu() throws ParserException {
 		final Set< Option> options = new HashSet<>( this.options);
-		final Option optionP = this.option( false, true, true, false, "--profile", "-p");
-		final Option optionI = this.option( false, true, true, true, "--ignore", "-I");
-		options.add( optionP);
-		options.add( optionI);
+		options.add( this.option( false, true, true, false, "--profile", "-p"));
+		options.add( this.option( false, true, true, true, "--ignore", "-I"));
 		this.syntax.setOptionalArgumentsAllowed( true);
-		final ParseResult result =
+		final Result result =
 				this.syntax.parse( options, "-a", "-abpp1", "-o", "file1", "-p", "--profile", "--ignore", "ignored", "--ign=ignored2", "-",
 						"xyz", "--profile=profile1", "-o-", "--", "-a", "-a");
-		Assert.assertFalse( result.getOptionNames( this.optionA).isEmpty());
-		Assert.assertFalse( result.getOptionNames( this.optionB).isEmpty());
-		Assert.assertFalse( result.getOptionNames( this.optionO).isEmpty());
-		Assert.assertFalse( result.getOptionNames( optionP).isEmpty());
-		Assert.assertFalse( result.getOptionNames( optionI).isEmpty());
-		Assert.assertFalse( result.getOptionArguments( this.optionA).isEmpty());
-		Assert.assertFalse( result.getOptionArguments( this.optionB).isEmpty());
-		Assert.assertFalse( result.getOptionArguments( this.optionO).isEmpty());
-		Assert.assertFalse( result.getOptionArguments( optionP).isEmpty());
-		Assert.assertFalse( result.getOptionArguments( optionI).isEmpty());
-		Assert.assertEquals( 2, result.getOptionNames( this.optionA).size());
-		Assert.assertEquals( 1, result.getOptionNames( this.optionB).size());
-		Assert.assertEquals( 2, result.getOptionNames( this.optionO).size());
-		Assert.assertEquals( 4, result.getOptionNames( optionP).size());
-		Assert.assertEquals( 2, result.getOptionNames( optionI).size());
-		Assert.assertEquals( 2, result.getOptionArguments( this.optionA).size());
-		Assert.assertEquals( 1, result.getOptionArguments( this.optionB).size());
-		Assert.assertEquals( 2, result.getOptionArguments( this.optionO).size());
-		Assert.assertEquals( 4, result.getOptionArguments( optionP).size());
-		Assert.assertEquals( 2, result.getOptionArguments( optionI).size());
-		Assert.assertArrayEquals( new String[]{ "file1", "-"}, result.getOptionArguments( this.optionO).toArray());
-		Assert.assertArrayEquals( new String[]{ "p1", null, null, "profile1"}, result.getOptionArguments( optionP).toArray());
-		Assert.assertArrayEquals( new String[]{ "ignored", "ignored2"}, result.getOptionArguments( optionI).toArray());
-		Assert.assertArrayEquals( new String[]{ "--ignore", "--ignore"}, result.getOptionNames( optionI).toArray());
+		Assert.assertTrue( result.occurred( "-a"));
+		Assert.assertTrue( result.occurred( "-b"));
+		Assert.assertTrue( result.occurred( "-o"));
+		Assert.assertTrue( result.occurred( "-p"));
+		Assert.assertTrue( result.occurred( "-I"));
+		Assert.assertEquals( 2, result.occurrences( "-a"));
+		Assert.assertEquals( 1, result.occurrences( "-b"));
+		Assert.assertEquals( 2, result.occurrences( "-o"));
+		Assert.assertEquals( 4, result.occurrences( "-p"));
+		Assert.assertEquals( 2, result.occurrences( "-I"));
+		Assert.assertArrayEquals( new String[]{ "file1", "-"}, result.getArguments( "-o").toArray());
+		Assert.assertArrayEquals( new String[]{ "p1", null, null, "profile1"}, result.getArguments( "-p").toArray());
+		Assert.assertArrayEquals( new String[]{ "ignored", "ignored2"}, result.getArguments( "-I").toArray());
+		Assert.assertArrayEquals( new String[]{ "--ignore", "--ignore"}, result.getNames( "-I").toArray());
 		Assert.assertArrayEquals( new String[]{ "-", "xyz", "-a", "-a"}, result.getOperands().toArray());
 	}
 }

@@ -12,11 +12,11 @@
  */
 package org.musiel.args.syntax;
 
-import java.util.List;
 import java.util.Set;
 
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
+import org.musiel.args.Result;
 
 /**
  * Many different kinds of syntax for command line arguments exist out there, a programmer may prefer one over another, or may want
@@ -48,14 +48,5 @@ public interface Syntax {
 	 * @return
 	 * @throws ParserException
 	 */
-	public ParseResult parse( Set< Option> options, String... args) throws ParserException;
-
-	public static interface ParseResult {
-
-		public List< String> getOptionNames( Option option);
-
-		public List< String> getOptionArguments( Option option);
-
-		public List< String> getOperands();
-	}
+	public Result parse( Set< Option> options, String... args) throws ParserException;
 }

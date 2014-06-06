@@ -12,17 +12,13 @@
  */
 package org.musiel.args.syntax;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 import java.util.regex.Pattern;
 
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
+import org.musiel.args.Result;
 
 /**
  * A {@link Syntax} implementation compliant with the <a
@@ -105,7 +101,7 @@ public class PosixSyntax implements Syntax {
 	}
 
 	@ Override
-	public ParseResult parse( final Set< Option> options, final String... args) throws ParserException {
+	public Result parse( final Set< Option> options, final String... args) throws ParserException {
 		final PosixMachine machine = this.newMachine( options);
 		for( final String arg: args)
 			machine.feed( arg);
@@ -117,28 +113,7 @@ public class PosixSyntax implements Syntax {
 		return new PosixMachine( options);
 	}
 
-	protected class PosixMachine implements ParseResult {
-
-		private final Map< Option, LinkedList< String>> optionNames = new HashMap<>();
-		private final Map< Option, LinkedList< String>> optionArguments = new HashMap<>();
-		private final List< String> operands = new LinkedList<>();
-
-		@ Override
-		public List< String> getOptionNames( final Option option) {
-			return Collections.unmodifiableList( this.optionNames.get( option));
-		}
-
-		@ Override
-		public List< String> getOptionArguments( final Option option) {
-			return Collections.unmodifiableList( this.optionArguments.get( option));
-		}
-
-		@ Override
-		public List< String> getOperands() {
-			return Collections.unmodifiableList( this.operands);
-		}
-
-		protected final Map< String, Option> optionDictionary = new TreeMap<>();
+	protected class PosixMachine extends AbstractResult {
 
 		protected PosixMachine( final Set< Option> options) {
 			for( final Option option: options) {
