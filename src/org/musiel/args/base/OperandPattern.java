@@ -14,16 +14,21 @@ package org.musiel.args.base;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.musiel.args.base.OperandPatternException.Reason;
 
 public class OperandPattern {
 
@@ -332,6 +337,52 @@ public class OperandPattern {
 		for( final Explorer explorer: explorers)
 			if( explorer.state.finalState)
 				result.add( explorer.path);
+		return result;
+	}
+
+	public Map< String, List< String>> match( final String... operands) throws OperandPatternException {
+		final List< String> list = new LinkedList<>();
+		Collections.addAll( list, operands);
+		return this.match( list);
+	}
+
+	public Map< String, List< String>> match( final List< String> operands) throws OperandPatternException {
+		List< Explorer> explorers = new LinkedList<>();
+		explorers.add( new Explorer( new String[ 0], this.initialState));
+		for( int i = 0; i < operands.size(); ++i) {
+			final List< Explorer> updatedExplorers = new LinkedList<>();
+			for( final Explorer explorer: explorers)
+				for( final Entry< State, String> transition: explorer.state.transitions.entrySet()) {
+					final String[] updatedPath = Arrays.copyOf( explorer.path, explorer.path.length + 1);
+					updatedPath[ updatedPath.length - 1] = transition.getValue();
+					updatedExplorers.add( new Explorer( updatedPath, transition.getKey()));
+				}
+			explorers = updatedExplorers;
+
+			if( explorers.isEmpty())
+				throw new OperandPatternException( Reason.TOO_MANY_OPERANDS);
+		}
+
+		final Set< String[]> haltingPaths = new HashSet<>();
+		for( final Explorer explorer: explorers)
+			if( explorer.state.finalState)
+				haltingPaths.add( explorer.path);
+		if( haltingPaths.isEmpty())
+			throw new OperandPatternException( Reason.TOO_FEW_OPERANDS);
+		if( haltingPaths.size() > 1)
+			throw new OperandPatternException( Reason.AMBIGUOUS);
+		final String[] path = haltingPaths.iterator().next();
+
+		final Map< String, List< String>> result = new TreeMap<>();
+		final Iterator< String> operandIterator = operands.iterator();
+		for( final String operandName: path) {
+			List< String> list = result.get( operandName);
+			if( list == null) {
+				list = new LinkedList<>();
+				result.put( operandName, list);
+			}
+			list.add( operandIterator.next());
+		}
 		return result;
 	}
 
