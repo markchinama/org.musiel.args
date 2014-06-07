@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -57,24 +58,24 @@ public class OperandPattern {
 	}
 
 	private String pattern = null;
-	private Set< String> names;
+	private List< String> names;
 
 	public String getPattern() {
 		return this.pattern;
 	}
 
-	public Set< String> getNames() {
+	public List< String> getNames() {
 		return this.names;
 	}
 
 	public static OperandPattern compile( final String pattern) {
-		final Set< String> names = new HashSet<>();
+		final Set< String> names = new LinkedHashSet<>();
 		final List< String> tokens = OperandPattern.tokenize( pattern, names);
 		final OperandPattern matcher =
 				tokens.isEmpty()? new OperandPattern(): OperandPattern
 						.compile( tokens.toArray( new String[ tokens.size()]), 0, tokens.size());
 		matcher.pattern = pattern;
-		matcher.names = names;
+		matcher.names = Collections.unmodifiableList( new LinkedList<>( names));
 		return matcher;
 	}
 
