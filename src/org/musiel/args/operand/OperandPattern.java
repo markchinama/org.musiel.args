@@ -390,6 +390,9 @@ public class OperandPattern {
 			}
 			list.add( operandIterator.next());
 		}
+		for( final String operandName: this.names)
+			if( !result.containsKey( operandName))
+				result.put( operandName, new LinkedList< String>());
 		return result;
 	}
 
