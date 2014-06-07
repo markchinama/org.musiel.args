@@ -37,7 +37,7 @@ public class OperandPatternTest {
 			/* 7 */"[A [B [C [D E [F]]]]]", //
 			/* 8 */"A B... C", //
 			/* 9 */"A B... [C]", //
-			/* 10*/"A B C [A]", //
+			/* 10 */"A B C [A]", //
 	};
 
 	@ Test
@@ -150,26 +150,54 @@ public class OperandPatternTest {
 
 	@ Test
 	public void testMultipleOccurrencesPossible() {
-		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 2]).isMultipleOccurrencePossible( "A"));
-		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 2]).isMultipleOccurrencePossible( "B"));
-		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 2]).isMultipleOccurrencePossible( "C"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 2]).isMultipleOccurrencePossible( "A"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 2]).isMultipleOccurrencePossible( "B"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 2]).isMultipleOccurrencePossible( "C"));
 
-		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 3]).isMultipleOccurrencePossible( "A"));
-		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 3]).isMultipleOccurrencePossible( "B"));
-		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 3]).isMultipleOccurrencePossible( "C"));
-		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 3]).isMultipleOccurrencePossible( "D"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).isMultipleOccurrencePossible( "A"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).isMultipleOccurrencePossible( "B"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).isMultipleOccurrencePossible( "C"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).isMultipleOccurrencePossible( "D"));
 
 		for( int i = 4; i <= 5; ++i) {
-			Assert.assertFalse( OperandPattern.compile( PATTERNS[ 4]).isMultipleOccurrencePossible( "A"));
-			Assert.assertFalse( OperandPattern.compile( PATTERNS[ 4]).isMultipleOccurrencePossible( "B"));
-			Assert.assertTrue( OperandPattern.compile( PATTERNS[ 4]).isMultipleOccurrencePossible( "C"));
-			Assert.assertTrue( OperandPattern.compile( PATTERNS[ 4]).isMultipleOccurrencePossible( "D"));
-			Assert.assertTrue( OperandPattern.compile( PATTERNS[ 4]).isMultipleOccurrencePossible( "E"));
+			Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 4]).isMultipleOccurrencePossible( "A"));
+			Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 4]).isMultipleOccurrencePossible( "B"));
+			Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 4]).isMultipleOccurrencePossible( "C"));
+			Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 4]).isMultipleOccurrencePossible( "D"));
+			Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 4]).isMultipleOccurrencePossible( "E"));
 		}
 
-		Assert.assertTrue( OperandPattern.compile( PATTERNS[ 10]).isMultipleOccurrencePossible( "A"));
-		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 10]).isMultipleOccurrencePossible( "B"));
-		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 10]).isMultipleOccurrencePossible( "C"));
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 10]).isMultipleOccurrencePossible( "A"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 10]).isMultipleOccurrencePossible( "B"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 10]).isMultipleOccurrencePossible( "C"));
+	}
+
+	@ Test
+	public void testAbsencePossible() {
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 2]).isAbsencePossible( "A"));
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 2]).isAbsencePossible( "B"));
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 2]).isAbsencePossible( "C"));
+
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).isAbsencePossible( "A"));
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).isAbsencePossible( "B"));
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).isAbsencePossible( "C"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).isAbsencePossible( "D"));
+
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 4]).isAbsencePossible( "A"));
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 4]).isAbsencePossible( "B"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 4]).isAbsencePossible( "C"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 4]).isAbsencePossible( "D"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 4]).isAbsencePossible( "E"));
+
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 5]).isAbsencePossible( "A"));
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 5]).isAbsencePossible( "B"));
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 5]).isAbsencePossible( "C"));
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 5]).isAbsencePossible( "D"));
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 5]).isAbsencePossible( "E"));
+
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 10]).isAbsencePossible( "A"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 10]).isAbsencePossible( "B"));
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 10]).isAbsencePossible( "C"));
 	}
 
 	// * 0 */"", //

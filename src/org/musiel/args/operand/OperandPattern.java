@@ -341,6 +341,31 @@ public class OperandPattern {
 		return false;
 	}
 
+	public boolean isAbsencePossible( final String operandName) {
+		if( this.initialState.finalState)
+			return true;
+		// try to find a path from initial state to any final state, with all transitions on the specified operand ignored
+		final LinkedList< State> toBeVisited = new LinkedList<>();
+		toBeVisited.add( this.initialState);
+		final HashSet< State> visitedOrQueued = new HashSet<>();
+		visitedOrQueued.add( this.initialState);
+		while( !toBeVisited.isEmpty()) {
+			final State beingVisited = toBeVisited.removeFirst();
+			for( final Entry< State, String> transition: beingVisited.transitions.entrySet())
+				if( operandName.equals( transition.getValue()))
+					continue;
+				else if( transition.getKey().finalState)
+					return true;
+				else if( visitedOrQueued.contains( transition.getKey()))
+					continue;
+				else {
+					visitedOrQueued.add( transition.getKey());
+					toBeVisited.addLast( transition.getKey());
+				}
+		}
+		return false;
+	}
+
 	private static class Explorer {
 
 		private final String[] path;
