@@ -13,7 +13,9 @@
 package org.musiel.args;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 
 /**
  * Thrown on user errors during a parsing task, such as unknown options, missing options, unexpected option-arguments.
@@ -24,8 +26,22 @@ public class ParserException extends Exception {
 
 	private static final long serialVersionUID = 2574553544635903474L;
 
-	public ParserException( final String message) {
+	private final String optionName;
+	private final Collection< String> additionalOptionNames;
+
+	public String getOptionName() {
+		return this.optionName;
+	}
+
+	public Collection< String> getAdditionalOptionNames() {
+		return this.additionalOptionNames;
+	}
+
+	public ParserException( final String message, final String optionName, final Collection< String> additionalOptionNames) {
 		super( message);
+		this.optionName = optionName;
+		this.additionalOptionNames =
+				additionalOptionNames == null? null: Collections.unmodifiableCollection( new LinkedList<>( additionalOptionNames));
 	}
 
 	protected static String optionNamesToString( final String main, final Collection< String> additional) {

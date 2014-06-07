@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.musiel.args.Option;
+import org.musiel.args.syntax.SyntaxException.Reason;
 
 /**
  * A {@link Syntax} implementation compliant with the GNU <a
@@ -107,25 +108,23 @@ public class GnuSyntax extends PosixSyntax {
 		}
 
 		@ Override
-		protected void handleOptionArg( final String arg) throws UnknownOptionException, ArgumentRequiredException,
-				AmbiguousOptionException, TooManyOccurrenceException, UnexpectedArgumentException {
+		protected void handleOptionArg( final String arg) throws SyntaxException {
 			if( arg.startsWith( "--"))
 				this.handleLongOptionArg( arg);
 			else
 				this.handleShortOptionArg( arg);
 		}
 
-		private void handleLongOptionArg( final String arg) throws UnknownOptionException, AmbiguousOptionException,
-				UnexpectedArgumentException, TooManyOccurrenceException, ArgumentRequiredException {
+		private void handleLongOptionArg( final String arg) throws SyntaxException {
 			final Matcher matcher = GnuSyntax.LONG_OPTION_PATTERN.matcher( arg);
 			if( !matcher.find())
-				throw new UnknownOptionException( arg);
+				throw new SyntaxException( Reason.UNKNOWN_OPTION, arg);
 			String name = matcher.group( 1);
 			Option option = this.optionDictionary.get( name);
 			if( option == null && GnuSyntax.this.isAbbreviationAllowed())
 				option = this.optionDictionary.get( name = this.findAbbreviatedName( name));
 			if( option == null)
-				throw new UnknownOptionException( name);
+				throw new SyntaxException( Reason.UNKNOWN_OPTION, name);
 
 			final String argument = matcher.group( 2);
 			if( argument != null)
@@ -138,16 +137,16 @@ public class GnuSyntax extends PosixSyntax {
 			}
 		}
 
-		private String findAbbreviatedName( final String name) throws AmbiguousOptionException, UnknownOptionException {
+		private String findAbbreviatedName( final String name) throws SyntaxException {
 			String candidate = null;
 			for( final String namePossible: this.optionDictionary.keySet())
 				if( namePossible.startsWith( name))
 					if( candidate == null)
 						candidate = namePossible;
 					else
-						throw new AmbiguousOptionException( name);
+						throw new SyntaxException( Reason.AMBIGUOUS, name);
 			if( candidate == null)
-				throw new UnknownOptionException( name);
+				throw new SyntaxException( Reason.UNKNOWN_OPTION, name);
 			return candidate;
 		}
 	}

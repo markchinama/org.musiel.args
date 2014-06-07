@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
+import org.musiel.args.syntax.SyntaxException.Reason;
 
 /**
  * A {@link Syntax} implementation compliant with the <a
@@ -127,14 +128,13 @@ public class PosixSyntax implements Syntax {
 			}
 		}
 
-		private void pushInCommon( final Option option, final String optionName, final String optionArgument)
-				throws TooManyOccurrenceException {
+		private void pushInCommon( final Option option, final String optionName, final String optionArgument) throws SyntaxException {
 			if( !option.getNames().contains( optionName))
 				throw new IllegalArgumentException( optionName + " is not a name for this option");
 			final LinkedList< String> names = this.optionNames.get( option);
 			final LinkedList< String> arguments = this.optionArguments.get( option);
 			if( !option.isRepeatable() && !names.isEmpty())
-				throw new TooManyOccurrenceException( optionName, names);
+				throw new SyntaxException( Reason.TOO_MANY_OCCURRENCES, optionName, names);
 			names.add( optionName);
 			arguments.add( optionArgument);
 		}
@@ -149,13 +149,12 @@ public class PosixSyntax implements Syntax {
 		 * 
 		 * @param name
 		 * @return
-		 * @throws ArgumentRequiredException
-		 * @throws TooManyOccurrenceException
+		 * @throws SyntaxException
 		 * @throws ParserException
 		 */
-		protected void push( final Option option, final String optionName) throws ArgumentRequiredException, TooManyOccurrenceException {
+		protected void push( final Option option, final String optionName) throws SyntaxException {
 			if( option.isArgumentRequired())
-				throw new ArgumentRequiredException( optionName);
+				throw new SyntaxException( Reason.ARGUMENT_REQUIRED, optionName);
 			this.pushInCommon( option, optionName, null);
 		}
 
@@ -171,16 +170,14 @@ public class PosixSyntax implements Syntax {
 		 * @param name
 		 * @param argument
 		 * @return
-		 * @throws UnexpectedArgumentException
-		 * @throws TooManyOccurrenceException
+		 * @throws SyntaxException
 		 * @throws ParserException
 		 */
-		protected void push( final Option option, final String optionName, final String optionArgument) throws UnexpectedArgumentException,
-				TooManyOccurrenceException {
+		protected void push( final Option option, final String optionName, final String optionArgument) throws SyntaxException {
 			if( optionArgument == null)
 				throw new NullPointerException( "value must not be null");
 			if( !option.isArgumentAccepted())
-				throw new UnexpectedArgumentException( optionName);
+				throw new SyntaxException( Reason.UNEXPECTED_ARGUMENT, optionName);
 			this.pushInCommon( option, optionName, optionArgument);
 		}
 
@@ -200,7 +197,7 @@ public class PosixSyntax implements Syntax {
 			else if( !arg.startsWith( "-") || arg.equals( "-"))
 				this.operands.add( arg);
 			else if( !PosixSyntax.this.isLateOptionsAllowed() && !this.operands.isEmpty())
-				throw new LateOptionException( arg);
+				throw new SyntaxException( Reason.LATE_OPTION, arg);
 			else
 				this.handleOptionArg( arg);
 		}
@@ -210,12 +207,11 @@ public class PosixSyntax implements Syntax {
 			this.handleShortOptionArg( arg);
 		}
 
-		protected void handleShortOptionArg( final String arg) throws UnknownOptionException, ArgumentRequiredException,
-				TooManyOccurrenceException, UnexpectedArgumentException {
+		protected void handleShortOptionArg( final String arg) throws SyntaxException {
 			final String firstOptionName = arg.substring( 0, 2); // long enough always
 			final Option option = this.optionDictionary.get( firstOptionName);
 			if( option == null)
-				throw new UnknownOptionException( firstOptionName);
+				throw new SyntaxException( Reason.UNKNOWN_OPTION, firstOptionName);
 
 			if( !option.isArgumentAccepted()) {
 				this.push( option, firstOptionName);
@@ -231,12 +227,12 @@ public class PosixSyntax implements Syntax {
 				this.push( option, firstOptionName, arg.substring( 2));
 			else
 				// joint not allowed => optional not allowed; it accepts => it requires => always throws exception here
-				throw new ArgumentRequiredException( firstOptionName);
+				throw new SyntaxException( Reason.ARGUMENT_REQUIRED, firstOptionName);
 		}
 
-		public void build() throws ArgumentRequiredException {
+		public void build() throws SyntaxException {
 			if( this.openOptionName != null)
-				throw new ArgumentRequiredException( this.openOptionName);
+				throw new SyntaxException( Reason.ARGUMENT_REQUIRED, this.openOptionName);
 		}
 	}
 }

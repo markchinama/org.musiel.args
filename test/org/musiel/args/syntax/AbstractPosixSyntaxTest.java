@@ -24,6 +24,7 @@ import org.junit.rules.ExpectedException;
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
 import org.musiel.args.syntax.Syntax.ParseResult;
+import org.musiel.args.syntax.SyntaxException.Reason;
 
 public abstract class AbstractPosixSyntaxTest {
 
@@ -161,6 +162,15 @@ public abstract class AbstractPosixSyntaxTest {
 		this.syntax.parse( options, args);
 	}
 
+	protected void testExceptionalParse( final Reason reason, final Set< Option> options, final String... args) throws ParserException {
+		try {
+			this.syntax.parse( options, args);
+			Assert.fail();
+		} catch( final SyntaxException exception) {
+			Assert.assertEquals( reason, exception.getReason());
+		}
+	}
+
 	@ Test
 	public void testParsingUnsupportedOption() throws ParserException {
 		final Set< Option> options = new HashSet<>( this.options);
@@ -179,17 +189,17 @@ public abstract class AbstractPosixSyntaxTest {
 
 	@ Test
 	public void testMissingArgument() throws ParserException {
-		this.testExceptionalParse( ArgumentRequiredException.class, "requires an argument", this.options, "-o");
+		this.testExceptionalParse( Reason.ARGUMENT_REQUIRED, this.options, "-o");
 	}
 
 	@ Test
 	public void testMissingArgument2() throws ParserException {
-		this.testExceptionalParse( ArgumentRequiredException.class, "requires an argument", this.options, "-oa");
+		this.testExceptionalParse( Reason.ARGUMENT_REQUIRED, this.options, "-oa");
 	}
 
 	@ Test
 	public void testUnknownOption() throws ParserException {
-		this.testExceptionalParse( UnknownOptionException.class, "unknown option", this.options, "-x");
+		this.testExceptionalParse( Reason.UNKNOWN_OPTION, this.options, "-x");
 	}
 
 	@ Test

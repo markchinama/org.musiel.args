@@ -15,6 +15,7 @@ package org.musiel.args.syntax;
 import org.junit.Assert;
 import org.junit.Test;
 import org.musiel.args.ParserException;
+import org.musiel.args.syntax.SyntaxException.Reason;
 
 public class PosixSyntaxTest extends AbstractPosixSyntaxTest {
 
@@ -38,6 +39,6 @@ public class PosixSyntaxTest extends AbstractPosixSyntaxTest {
 	@ Test
 	public void testLateOption() throws ParserException {
 		this.syntax.parse( this.options, "-a", "file1");
-		this.testExceptionalParse( LateOptionException.class, "options must precede operands", this.options, "-a", "file1", "-a");
+		this.testExceptionalParse( Reason.LATE_OPTION, this.options, "-a", "file1", "-a");
 	}
 }

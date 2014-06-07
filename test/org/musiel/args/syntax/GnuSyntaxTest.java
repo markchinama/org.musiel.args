@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
 import org.musiel.args.syntax.Syntax.ParseResult;
+import org.musiel.args.syntax.SyntaxException.Reason;
 
 public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 
@@ -55,7 +56,7 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 	@ Test
 	public void testLateOptionDisabled() throws ParserException {
 		this.syntax.setLateOptionsAllowed( false);
-		this.testExceptionalParse( LateOptionException.class, "options must precede operands", this.options, "-a", "file1", "-a");
+		this.testExceptionalParse( Reason.LATE_OPTION, this.options, "-a", "file1", "-a");
 	}
 
 	@ Test
@@ -64,7 +65,7 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 		options.add( this.option( false, true, true, true, "--ignore", "-I"));
 		options.add( this.option( false, true, true, true, "--ignore-file", "-F"));
 		this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file");
-		this.testExceptionalParse( UnknownOptionException.class, "unknown option", options, "--ignored", "ignored", "--ignor=ignored-file");
+		this.testExceptionalParse( Reason.UNKNOWN_OPTION, options, "--ignored", "ignored", "--ignor=ignored-file");
 	}
 
 	@ Test
@@ -73,7 +74,7 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 		options.add( this.option( false, true, true, true, "--ignore", "-I"));
 		options.add( this.option( false, true, true, true, "--ignore-file", "-F"));
 		this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file");
-		this.testExceptionalParse( UnknownOptionException.class, "unknown option", options, "--ignore", "ignored", "--ignor?=ignored-file");
+		this.testExceptionalParse( Reason.UNKNOWN_OPTION, options, "--ignore", "ignored", "--ignor?=ignored-file");
 	}
 
 	@ Test
@@ -82,7 +83,7 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 		options.add( this.option( false, true, true, true, "--ignore", "-I"));
 		this.syntax.parse( options, "--ign", "ignored");
 		( ( GnuSyntax) this.syntax).setAbbreviationAllowed( false);
-		this.testExceptionalParse( UnknownOptionException.class, "unknown option", options, "--ign", "ignored");
+		this.testExceptionalParse( Reason.UNKNOWN_OPTION, options, "--ign", "ignored");
 	}
 
 	@ Test
@@ -100,7 +101,7 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 		Assert.assertArrayEquals( new String[]{ "ignored-file"}, result.getArguments( "-F").toArray());
 		Assert.assertArrayEquals( new String[]{ "--ignore-file"}, result.getNames( "-F").toArray());
 
-		this.testExceptionalParse( AmbiguousOptionException.class, "ambiguous", options, "--ignore", "ignored", "--ignor=ignored-file");
+		this.testExceptionalParse( Reason.AMBIGUOUS, options, "--ignore", "ignored", "--ignor=ignored-file");
 	}
 
 	@ Test
