@@ -56,7 +56,12 @@ public class OperandPattern {
 		return tokens;
 	}
 
+	private String pattern = null;
 	private Set< String> names;
+
+	public String getPattern() {
+		return this.pattern;
+	}
 
 	public Set< String> getNames() {
 		return this.names;
@@ -68,6 +73,7 @@ public class OperandPattern {
 		final OperandPattern matcher =
 				tokens.isEmpty()? new OperandPattern(): OperandPattern
 						.compile( tokens.toArray( new String[ tokens.size()]), 0, tokens.size());
+		matcher.pattern = pattern;
 		matcher.names = names;
 		return matcher;
 	}
