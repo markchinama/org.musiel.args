@@ -200,6 +200,36 @@ public class OperandPatternTest {
 		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 10]).isAbsencePossible( "C"));
 	}
 
+	@ Test
+	public void testMoreThanOneOperandsPossible() {
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 0]).isMoreThanOneOperandsPossible());
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 1]).isMoreThanOneOperandsPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 2]).isMoreThanOneOperandsPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).isMoreThanOneOperandsPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 4]).isMoreThanOneOperandsPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 5]).isMoreThanOneOperandsPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 6]).isMoreThanOneOperandsPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 7]).isMoreThanOneOperandsPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 8]).isMoreThanOneOperandsPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 9]).isMoreThanOneOperandsPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 10]).isMoreThanOneOperandsPossible());
+	}
+
+	@ Test
+	public void testEmptyPossible() {
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 0]).isEmptyPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 1]).isEmptyPossible());
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 2]).isEmptyPossible());
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).isEmptyPossible());
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 4]).isEmptyPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 5]).isEmptyPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 6]).isEmptyPossible());
+		Assert.assertTrue( OperandPattern.compile( OperandPatternTest.PATTERNS[ 7]).isEmptyPossible());
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 8]).isEmptyPossible());
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 9]).isEmptyPossible());
+		Assert.assertFalse( OperandPattern.compile( OperandPatternTest.PATTERNS[ 10]).isEmptyPossible());
+	}
+
 	// * 0 */"", //
 	// * 1 */" ", //
 	// * 2 */"A B | A C ", //

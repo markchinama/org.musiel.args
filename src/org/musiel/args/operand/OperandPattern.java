@@ -315,6 +315,17 @@ public class OperandPattern {
 		return null;
 	}
 
+	public boolean isMoreThanOneOperandsPossible() {
+		for( State state: this.initialState.transitions.keySet())
+			if( !state.transitions.isEmpty())
+				return true;
+		return false;
+	}
+
+	public boolean isEmptyPossible() {
+		return this.initialState.finalState;
+	}
+
 	public boolean isMultipleOccurrencePossible( final String operandName) {
 		if( !this.names.contains( operandName))
 			throw new IllegalArgumentException();
