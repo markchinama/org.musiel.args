@@ -18,7 +18,6 @@ import java.util.regex.Pattern;
 
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
-import org.musiel.args.Result;
 
 /**
  * A {@link Syntax} implementation compliant with the <a
@@ -101,7 +100,7 @@ public class PosixSyntax implements Syntax {
 	}
 
 	@ Override
-	public Result parse( final Set< Option> options, final String... args) throws ParserException {
+	public ParseResult parse( final Set< Option> options, final String... args) throws ParserException {
 		final PosixMachine machine = this.newMachine( options);
 		for( final String arg: args)
 			machine.feed( arg);

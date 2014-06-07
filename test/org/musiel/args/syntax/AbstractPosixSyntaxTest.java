@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
-import org.musiel.args.Result;
+import org.musiel.args.syntax.Syntax.ParseResult;
 
 public abstract class AbstractPosixSyntaxTest {
 
@@ -194,13 +194,13 @@ public abstract class AbstractPosixSyntaxTest {
 
 	@ Test
 	public void testParse() throws ParserException {
-		final Result result = this.syntax.parse( this.options, "-a", "-o", "file1", "-o", "-", "-", "xyz", "--", "-a", "-a");
-		Assert.assertTrue( result.occurred( "-a"));
-		Assert.assertFalse( result.occurred( "-b"));
-		Assert.assertTrue( result.occurred( "-o"));
-		Assert.assertEquals( 1, result.occurrences( "-a"));
-		Assert.assertEquals( 0, result.occurrences( "-b"));
-		Assert.assertEquals( 2, result.occurrences( "-o"));
+		final ParseResult result = this.syntax.parse( this.options, "-a", "-o", "file1", "-o", "-", "-", "xyz", "--", "-a", "-a");
+		Assert.assertTrue( result.isOccurred( "-a"));
+		Assert.assertFalse( result.isOccurred( "-b"));
+		Assert.assertTrue( result.isOccurred( "-o"));
+		Assert.assertEquals( 1, result.getOccurrences( "-a"));
+		Assert.assertEquals( 0, result.getOccurrences( "-b"));
+		Assert.assertEquals( 2, result.getOccurrences( "-o"));
 		Assert.assertArrayEquals( new String[]{ "file1", "-"}, result.getArguments( "-o").toArray());
 		Assert.assertArrayEquals( new String[]{ "-", "xyz", "-a", "-a"}, result.getOperands().toArray());
 	}
@@ -208,13 +208,13 @@ public abstract class AbstractPosixSyntaxTest {
 	@ Test
 	public void testParseJoint() throws ParserException {
 		this.syntax.setJointArgumentsAllowed( true);
-		final Result result = this.syntax.parse( this.options, "-a", "-o", "file1", "-ooutput2", "-", "xyz", "--", "-a", "-a");
-		Assert.assertTrue( result.occurred( "-a"));
-		Assert.assertFalse( result.occurred( "-b"));
-		Assert.assertTrue( result.occurred( "-o"));
-		Assert.assertEquals( 1, result.occurrences( "-a"));
-		Assert.assertEquals( 0, result.occurrences( "-b"));
-		Assert.assertEquals( 2, result.occurrences( "-o"));
+		final ParseResult result = this.syntax.parse( this.options, "-a", "-o", "file1", "-ooutput2", "-", "xyz", "--", "-a", "-a");
+		Assert.assertTrue( result.isOccurred( "-a"));
+		Assert.assertFalse( result.isOccurred( "-b"));
+		Assert.assertTrue( result.isOccurred( "-o"));
+		Assert.assertEquals( 1, result.getOccurrences( "-a"));
+		Assert.assertEquals( 0, result.getOccurrences( "-b"));
+		Assert.assertEquals( 2, result.getOccurrences( "-o"));
 		Assert.assertArrayEquals( new String[]{ "file1", "output2"}, result.getArguments( "-o").toArray());
 		Assert.assertArrayEquals( new String[]{ "-", "xyz", "-a", "-a"}, result.getOperands().toArray());
 	}
@@ -225,16 +225,16 @@ public abstract class AbstractPosixSyntaxTest {
 		options.add( this.option( false, true, true, false, "-p"));
 		this.syntax.setOptionalArgumentsAllowed( true);
 		this.syntax.setLateOptionsAllowed( true);
-		final Result result =
+		final ParseResult result =
 				this.syntax.parse( options, "-a", "-abpp1", "-o", "file1", "-p", "-", "xyz", "-pprofile1", "-o-", "--", "-a", "-a");
-		Assert.assertTrue( result.occurred( "-a"));
-		Assert.assertTrue( result.occurred( "-b"));
-		Assert.assertTrue( result.occurred( "-o"));
-		Assert.assertTrue( result.occurred( "-p"));
-		Assert.assertEquals( 2, result.occurrences( "-a"));
-		Assert.assertEquals( 1, result.occurrences( "-b"));
-		Assert.assertEquals( 2, result.occurrences( "-o"));
-		Assert.assertEquals( 3, result.occurrences( "-p"));
+		Assert.assertTrue( result.isOccurred( "-a"));
+		Assert.assertTrue( result.isOccurred( "-b"));
+		Assert.assertTrue( result.isOccurred( "-o"));
+		Assert.assertTrue( result.isOccurred( "-p"));
+		Assert.assertEquals( 2, result.getOccurrences( "-a"));
+		Assert.assertEquals( 1, result.getOccurrences( "-b"));
+		Assert.assertEquals( 2, result.getOccurrences( "-o"));
+		Assert.assertEquals( 3, result.getOccurrences( "-p"));
 		Assert.assertArrayEquals( new String[]{ "file1", "-"}, result.getArguments( "-o").toArray());
 		Assert.assertArrayEquals( new String[]{ "p1", null, "profile1"}, result.getArguments( "-p").toArray());
 		Assert.assertArrayEquals( new String[]{ "-", "xyz", "-a", "-a"}, result.getOperands().toArray());

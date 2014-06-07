@@ -19,7 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
-import org.musiel.args.Result;
+import org.musiel.args.syntax.Syntax.ParseResult;
 
 public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 
@@ -91,7 +91,7 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 		options.add( this.option( false, true, true, true, "--ignore", "-I"));
 		options.add( this.option( false, true, true, true, "--ignore-file", "-F"));
 
-		Result result = this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file");
+		ParseResult result = this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file");
 		Assert.assertArrayEquals( new String[]{ "ignored"}, result.getArguments( "-I").toArray());
 		Assert.assertArrayEquals( new String[]{ "ignored-file"}, result.getArguments( "-F").toArray());
 
@@ -109,19 +109,19 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 		options.add( this.option( false, true, true, false, "--profile", "-p"));
 		options.add( this.option( false, true, true, true, "--ignore", "-I"));
 		this.syntax.setOptionalArgumentsAllowed( true);
-		final Result result =
+		final ParseResult result =
 				this.syntax.parse( options, "-a", "-abpp1", "-o", "file1", "-p", "--profile", "--ignore", "ignored", "--ign=ignored2", "-",
 						"xyz", "--profile=profile1", "-o-", "--", "-a", "-a");
-		Assert.assertTrue( result.occurred( "-a"));
-		Assert.assertTrue( result.occurred( "-b"));
-		Assert.assertTrue( result.occurred( "-o"));
-		Assert.assertTrue( result.occurred( "-p"));
-		Assert.assertTrue( result.occurred( "-I"));
-		Assert.assertEquals( 2, result.occurrences( "-a"));
-		Assert.assertEquals( 1, result.occurrences( "-b"));
-		Assert.assertEquals( 2, result.occurrences( "-o"));
-		Assert.assertEquals( 4, result.occurrences( "-p"));
-		Assert.assertEquals( 2, result.occurrences( "-I"));
+		Assert.assertTrue( result.isOccurred( "-a"));
+		Assert.assertTrue( result.isOccurred( "-b"));
+		Assert.assertTrue( result.isOccurred( "-o"));
+		Assert.assertTrue( result.isOccurred( "-p"));
+		Assert.assertTrue( result.isOccurred( "-I"));
+		Assert.assertEquals( 2, result.getOccurrences( "-a"));
+		Assert.assertEquals( 1, result.getOccurrences( "-b"));
+		Assert.assertEquals( 2, result.getOccurrences( "-o"));
+		Assert.assertEquals( 4, result.getOccurrences( "-p"));
+		Assert.assertEquals( 2, result.getOccurrences( "-I"));
 		Assert.assertArrayEquals( new String[]{ "file1", "-"}, result.getArguments( "-o").toArray());
 		Assert.assertArrayEquals( new String[]{ "p1", null, null, "profile1"}, result.getArguments( "-p").toArray());
 		Assert.assertArrayEquals( new String[]{ "ignored", "ignored2"}, result.getArguments( "-I").toArray());

@@ -20,9 +20,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.musiel.args.Option;
-import org.musiel.args.Result;
+import org.musiel.args.syntax.Syntax.ParseResult;
 
-public abstract class AbstractResult implements Result {
+public abstract class AbstractResult implements ParseResult {
 
 	protected final Map< String, Option> optionDictionary = new TreeMap<>();
 
@@ -42,25 +42,35 @@ public abstract class AbstractResult implements Result {
 		return Collections.unmodifiableList( this.optionNames.get( this.getOption( option)));
 	}
 
-	@ Override
-	public List< String> getArguments( final String option) {
-		return Collections.unmodifiableList( this.optionArguments.get( this.getOption( option)));
+	private LinkedList< String> getArgumentsAsLinkedList( final String option) {
+		return this.optionArguments.get( this.getOption( option));
 	}
 
 	@ Override
-	public boolean occurred( final String option) {
+	public List< String> getArguments( final String option) {
+		return Collections.unmodifiableList( this.getArgumentsAsLinkedList( option));
+	}
+
+	@ Override
+	public boolean isOccurred( final String option) {
 		return !this.getNames( option).isEmpty();
 	}
 
 	@ Override
-	public int occurrences( final String option) {
+	public int getOccurrences( final String option) {
 		return this.getNames( option).size();
 	}
 
 	@ Override
 	public String getFirstArgument( final String option) {
-		final List< String> arguments = this.getArguments( option);
-		return arguments.isEmpty()? null: arguments.get( 0);
+		final LinkedList< String> arguments = this.getArgumentsAsLinkedList( option);
+		return arguments.isEmpty()? null: arguments.getFirst();
+	}
+
+	@ Override
+	public String getLastArgument( final String option) {
+		final LinkedList< String> arguments = this.getArgumentsAsLinkedList( option);
+		return arguments.isEmpty()? null: arguments.getLast();
 	}
 
 	@ Override
