@@ -37,6 +37,7 @@ public class OperandPatternTest {
 			/* 7 */"[A [B [C [D E [F]]]]]", //
 			/* 8 */"A B... C", //
 			/* 9 */"A B... [C]", //
+			/* 10*/"A B C [A]", //
 	};
 
 	@ Test
@@ -97,17 +98,6 @@ public class OperandPatternTest {
 		this.seq( 5, 7, "A C D E C D E");
 	}
 
-	// * 0 */"", //
-	// * 1 */" ", //
-	// * 2 */"A B | A C ", //
-	// * 3 */"A [B] [C] D", //
-	// * 4 */"[A [B]] (C D E)...", //
-	// * 5 */"[A [B]] [C D E]...", //
-	// * 6 */"[A [B [C [D [E]]]]]", //
-	// * 7 */"[A [B [C [D E [F]]]]]", //
-	// * 8 */"A B... C", //
-	// * 9 */"A B... [C]", //
-
 	@ Test
 	public void testMatching() throws OperandPatternException {
 		try {
@@ -157,4 +147,40 @@ public class OperandPatternTest {
 		Collections.addAll( list, strings);
 		return list;
 	}
+
+	@ Test
+	public void testMultipleOccurrencesPossible() {
+		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 2]).isMultipleOccurrencePossible( "A"));
+		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 2]).isMultipleOccurrencePossible( "B"));
+		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 2]).isMultipleOccurrencePossible( "C"));
+
+		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 3]).isMultipleOccurrencePossible( "A"));
+		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 3]).isMultipleOccurrencePossible( "B"));
+		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 3]).isMultipleOccurrencePossible( "C"));
+		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 3]).isMultipleOccurrencePossible( "D"));
+
+		for( int i = 4; i <= 5; ++i) {
+			Assert.assertFalse( OperandPattern.compile( PATTERNS[ 4]).isMultipleOccurrencePossible( "A"));
+			Assert.assertFalse( OperandPattern.compile( PATTERNS[ 4]).isMultipleOccurrencePossible( "B"));
+			Assert.assertTrue( OperandPattern.compile( PATTERNS[ 4]).isMultipleOccurrencePossible( "C"));
+			Assert.assertTrue( OperandPattern.compile( PATTERNS[ 4]).isMultipleOccurrencePossible( "D"));
+			Assert.assertTrue( OperandPattern.compile( PATTERNS[ 4]).isMultipleOccurrencePossible( "E"));
+		}
+
+		Assert.assertTrue( OperandPattern.compile( PATTERNS[ 10]).isMultipleOccurrencePossible( "A"));
+		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 10]).isMultipleOccurrencePossible( "B"));
+		Assert.assertFalse( OperandPattern.compile( PATTERNS[ 10]).isMultipleOccurrencePossible( "C"));
+	}
+
+	// * 0 */"", //
+	// * 1 */" ", //
+	// * 2 */"A B | A C ", //
+	// * 3 */"A [B] [C] D", //
+	// * 4 */"[A [B]] (C D E)...", //
+	// * 5 */"[A [B]] [C D E]...", //
+	// * 6 */"[A [B [C [D [E]]]]]", //
+	// * 7 */"[A [B [C [D E [F]]]]]", //
+	// * 8 */"A B... C", //
+	// * 9 */"A B... [C]", //
+	// * 10*/"A B C [A]", //
 }

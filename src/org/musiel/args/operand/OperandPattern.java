@@ -315,6 +315,32 @@ public class OperandPattern {
 		return null;
 	}
 
+	public boolean isMultipleOccurrencePossible( final String operandName) {
+		if( !this.names.contains( operandName))
+			throw new IllegalArgumentException();
+
+		final Set< State> allStates = new HashSet<>( this.nonInitialStates);
+		allStates.add( this.initialState);
+
+		final Set< State> metThatOperand = new HashSet<>();
+		for( final State state: allStates)
+			for( final Entry< State, String> transition: state.transitions.entrySet())
+				if( operandName.equals( transition.getValue()))
+					metThatOperand.add( transition.getKey());
+
+		for( int sizeWas = -1, sizeIs = metThatOperand.size(); sizeWas != sizeIs; sizeWas = sizeIs, sizeIs = metThatOperand.size()) {
+			final Set< State> extension = new HashSet<>();
+			for( final State state: metThatOperand)
+				for( final Entry< State, String> transition: state.transitions.entrySet())
+					if( operandName.equals( transition.getValue()))
+						return true;
+					else
+						extension.add( transition.getKey());
+			metThatOperand.addAll( extension);
+		}
+		return false;
+	}
+
 	private static class Explorer {
 
 		private final String[] path;
