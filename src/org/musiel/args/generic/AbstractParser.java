@@ -115,7 +115,7 @@ public abstract class AbstractParser< RESULT> implements Parser< RESULT> {
 	@ Override
 	public RESULT parse( final String... args) throws ParserException {
 		final ParseResult syntaxResult = this.syntax.parse( Collections.unmodifiableSet( this.options), args);
-		final Map< String, LinkedList< String>> operandMap =
+		final Map< String, List< String>> operandMap =
 				this.operandPattern == null? null: this.operandPattern.match( syntaxResult.getOperands());
 		return this.postProcess( new GenericResult( syntaxResult, operandMap));
 	}

@@ -12,6 +12,7 @@
  */
 package org.musiel.args.syntax;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -25,8 +26,8 @@ public abstract class AbstractParseResult implements ParseResult {
 
 	protected final Map< String, Option> optionDictionary = new TreeMap<>();
 
-	protected final Map< Option, LinkedList< String>> optionNames = new HashMap<>();
-	protected final Map< Option, LinkedList< String>> optionArguments = new HashMap<>();
+	protected final Map< Option, List< String>> optionNames = new HashMap<>();
+	protected final Map< Option, List< String>> optionArguments = new HashMap<>();
 	protected final List< String> operands = new LinkedList<>();
 
 	private Option getOption( final String optionName) {
@@ -37,17 +38,17 @@ public abstract class AbstractParseResult implements ParseResult {
 	}
 
 	@ Override
-	public LinkedList< String> getNames( final String option) {
-		return new LinkedList<>( this.optionNames.get( this.getOption( option)));
+	public List< String> getNames( final String option) {
+		return Collections.unmodifiableList( this.optionNames.get( this.getOption( option)));
 	}
 
 	@ Override
-	public LinkedList< String> getArguments( final String option) {
-		return new LinkedList<>( this.optionArguments.get( this.getOption( option)));
+	public List< String> getArguments( final String option) {
+		return Collections.unmodifiableList( this.optionArguments.get( this.getOption( option)));
 	}
 
 	@ Override
-	public LinkedList< String> getOperands() {
-		return new LinkedList<>( this.operands);
+	public List< String> getOperands() {
+		return Collections.unmodifiableList( this.operands);
 	}
 }

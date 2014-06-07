@@ -12,7 +12,7 @@
  */
 package org.musiel.args.syntax;
 
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 import org.musiel.args.Option;
@@ -73,7 +73,7 @@ public interface Syntax {
 		 * @param option
 		 * @return
 		 */
-		public LinkedList< String> getNames( String option);
+		public List< String> getNames( String option);
 
 		/**
 		 * Returns the option-arguments of an option, in the order they occurred. Occurrences without arguments produce <code>null</code>s.
@@ -81,13 +81,13 @@ public interface Syntax {
 		 * @param option
 		 * @return
 		 */
-		public LinkedList< String> getArguments( String option);
+		public List< String> getArguments( String option);
 
 		/**
 		 * Returns all operands.
 		 * 
 		 * @return
 		 */
-		public LinkedList< String> getOperands();
+		public List< String> getOperands();
 	}
 }

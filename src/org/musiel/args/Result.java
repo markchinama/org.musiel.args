@@ -40,6 +40,8 @@ public interface Result {
 	 */
 	public List< String> getNames( String option);
 
+	public String getName( String option);
+
 	/**
 	 * Returns the option-arguments of an option, in the order they occurred. Occurrences without arguments produce <code>null</code>s.
 	 * 
@@ -49,22 +51,13 @@ public interface Result {
 	public List< String> getArguments( String option);
 
 	/**
-	 * Returns the option-argument in the first occurrence of an option, or <code>null</code> if the option never occurred, or not with an
-	 * argument in the first occurrence.
+	 * Returns the option-argument in the only occurrence of an option, or <code>null</code> if the option never occurred, or not with an
+	 * argument.
 	 * 
 	 * @param option
 	 * @return
 	 */
-	public String getFirstArgument( String option);
-
-	/**
-	 * Returns the option-argument in the last occurrence of an option, or <code>null</code> if the option never occurred, or not with an
-	 * argument in the last occurrence.
-	 * 
-	 * @param option
-	 * @return
-	 */
-	public String getLastArgument( String option);
+	public String getArgument( String option);
 
 	/**
 	 * Returns all operands.
@@ -75,7 +68,5 @@ public interface Result {
 
 	public List< String> getOperands( String operandName);
 
-	public String getFirstOperand( String operandName);
-
-	public String getLastOperand( String operandName);
+	public String getOperand( String operandName);
 }

@@ -12,7 +12,6 @@
  */
 package org.musiel.args.generic;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,9 +21,9 @@ import org.musiel.args.syntax.Syntax.ParseResult;
 public class GenericResult implements Result {
 
 	private final ParseResult syntaxResult;
-	private final Map< String, ? extends LinkedList< String>> operandMap;
+	private final Map< String, ? extends List< String>> operandMap;
 
-	public GenericResult( final ParseResult syntaxResult, final Map< String, ? extends LinkedList< String>> operandMap) {
+	public GenericResult( final ParseResult syntaxResult, final Map< String, ? extends List< String>> operandMap) {
 		super();
 		this.syntaxResult = syntaxResult;
 		this.operandMap = operandMap;
@@ -46,20 +45,18 @@ public class GenericResult implements Result {
 	}
 
 	@ Override
+	public String getName( final String option) {
+		return this.getSingle( this.getNames( option));
+	}
+
+	@ Override
 	public List< String> getArguments( final String option) {
 		return this.syntaxResult.getArguments( option);
 	}
 
 	@ Override
-	public String getFirstArgument( final String option) {
-		final LinkedList< String> arguments = this.syntaxResult.getArguments( option);
-		return arguments.isEmpty()? null: arguments.getFirst();
-	}
-
-	@ Override
-	public String getLastArgument( final String option) {
-		final LinkedList< String> arguments = this.syntaxResult.getArguments( option);
-		return arguments.isEmpty()? null: arguments.getLast();
+	public String getArgument( final String option) {
+		return this.getSingle( this.syntaxResult.getArguments( option));
 	}
 
 	@ Override
@@ -67,13 +64,10 @@ public class GenericResult implements Result {
 		return this.syntaxResult.getOperands();
 	}
 
-	private LinkedList< String> checkAndGetOperands( final String operandName) {
-		if( this.operandMap == null)
-			return null;
-		final LinkedList< String> list = this.operandMap.get( operandName);
-		if( list == null)
+	private List< String> checkAndGetOperands( final String operandName) {
+		if( this.operandMap == null || !this.operandMap.containsKey( operandName))
 			throw new IllegalArgumentException( "unknown operand name: " + operandName);
-		return list;
+		return this.operandMap.get( operandName);
 	}
 
 	@ Override
@@ -82,14 +76,15 @@ public class GenericResult implements Result {
 	}
 
 	@ Override
-	public String getFirstOperand( final String operandName) {
-		final LinkedList< String> list = this.checkAndGetOperands( operandName);
-		return list.isEmpty()? null: list.getFirst();
+	public String getOperand( final String operandName) {
+		return this.getSingle( this.checkAndGetOperands( operandName));
 	}
 
-	@ Override
-	public String getLastOperand( final String operandName) {
-		final LinkedList< String> list = this.checkAndGetOperands( operandName);
-		return list.isEmpty()? null: list.getLast();
+	private < E>E getSingle( final List< E> list) {
+		if( list == null)
+			return null;
+		if( list.size() > 1)
+			throw new IllegalArgumentException( "more than one element found");
+		return list.isEmpty()? null: list.get( 0);
 	}
 }

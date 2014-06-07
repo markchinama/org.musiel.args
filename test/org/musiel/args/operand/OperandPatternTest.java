@@ -21,8 +21,6 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.musiel.args.operand.OperandPattern;
-import org.musiel.args.operand.OperandPatternException;
 import org.musiel.args.operand.OperandPatternException.Reason;
 
 public class OperandPatternTest {
@@ -133,7 +131,7 @@ public class OperandPatternTest {
 			Assert.assertEquals( Reason.TOO_FEW_OPERANDS, exception.getReason());
 		}
 
-		Map< String, LinkedList< String>> result;
+		Map< String, List< String>> result;
 
 		result = OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).match( "a", "b", "c", "d");
 		Assert.assertEquals( this.toList( "a"), result.get( "A"));

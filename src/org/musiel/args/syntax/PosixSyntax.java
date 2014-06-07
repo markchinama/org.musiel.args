@@ -13,6 +13,7 @@
 package org.musiel.args.syntax;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -131,8 +132,8 @@ public class PosixSyntax implements Syntax {
 		private void pushInCommon( final Option option, final String optionName, final String optionArgument) throws SyntaxException {
 			if( !option.getNames().contains( optionName))
 				throw new IllegalArgumentException( optionName + " is not a name for this option");
-			final LinkedList< String> names = this.optionNames.get( option);
-			final LinkedList< String> arguments = this.optionArguments.get( option);
+			final List< String> names = this.optionNames.get( option);
+			final List< String> arguments = this.optionArguments.get( option);
 			if( !option.isRepeatable() && !names.isEmpty())
 				throw new SyntaxException( Reason.TOO_MANY_OCCURRENCES, optionName, names);
 			names.add( optionName);
