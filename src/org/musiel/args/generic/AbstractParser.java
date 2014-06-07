@@ -80,6 +80,10 @@ public abstract class AbstractParser< RESULT> implements Parser< RESULT> {
 
 	private OperandPattern operandPattern = null;
 
+	protected OperandPattern getOperandPatternMatcher() {
+		return this.operandPattern;
+	}
+
 	@ Override
 	public String getOperandPattern() {
 		return this.operandPattern == null? null: this.operandPattern.getPattern();
