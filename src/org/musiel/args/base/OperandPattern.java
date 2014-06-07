@@ -25,7 +25,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class OperandPattern {
+public class OperandPattern {
 
 	private static final Pattern TOKENS = Pattern.compile( "^(?:(" //
 			+ "[a-zA-Z\\-0-9]+)" + "|(" // operand name: input-file, a, b
@@ -334,15 +334,15 @@ class OperandPattern {
 				result.add( explorer.path);
 		return result;
 	}
-}
 
-class State {
+	private static class State {
 
-	boolean finalState = true;
-	// none of the four operations adds different tokens for the same destination, so just use a map
-	Map< State, String> transitions = new HashMap<>();
+		boolean finalState = true;
+		// none of the four operations adds different tokens for the same destination, so just use a map
+		Map< State, String> transitions = new HashMap<>();
 
-	State( final boolean finalState) {
-		this.finalState = finalState;
+		State( final boolean finalState) {
+			this.finalState = finalState;
+		}
 	}
 }
