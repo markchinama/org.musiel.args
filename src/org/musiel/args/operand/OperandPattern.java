@@ -347,13 +347,13 @@ public class OperandPattern {
 		return result;
 	}
 
-	public Map< String, List< String>> match( final String... operands) throws OperandPatternException {
+	public Map< String, LinkedList< String>> match( final String... operands) throws OperandPatternException {
 		final List< String> list = new LinkedList<>();
 		Collections.addAll( list, operands);
 		return this.match( list);
 	}
 
-	public Map< String, List< String>> match( final List< String> operands) throws OperandPatternException {
+	public Map< String, LinkedList< String>> match( final List< String> operands) throws OperandPatternException {
 		List< Explorer> explorers = new LinkedList<>();
 		explorers.add( new Explorer( new String[ 0], this.initialState));
 		for( int i = 0; i < operands.size(); ++i) {
@@ -380,10 +380,10 @@ public class OperandPattern {
 			throw new OperandPatternException( Reason.AMBIGUOUS);
 		final String[] path = haltingPaths.iterator().next();
 
-		final Map< String, List< String>> result = new TreeMap<>();
+		final Map< String, LinkedList< String>> result = new TreeMap<>();
 		final Iterator< String> operandIterator = operands.iterator();
 		for( final String operandName: path) {
-			List< String> list = result.get( operandName);
+			LinkedList< String> list = result.get( operandName);
 			if( list == null) {
 				list = new LinkedList<>();
 				result.put( operandName, list);
