@@ -12,7 +12,7 @@
  */
 package org.musiel.args.syntax;
 
-import java.util.List;
+import java.util.LinkedList;
 import java.util.Set;
 
 import org.musiel.args.Option;
@@ -68,28 +68,12 @@ public interface Syntax {
 	public static interface ParseResult {
 
 		/**
-		 * Returns whether an option occurred at least once.
-		 * 
-		 * @param option
-		 * @return
-		 */
-		public boolean isOccurred( String option);
-
-		/**
-		 * Returns how many times an option occurred.
-		 * 
-		 * @param option
-		 * @return
-		 */
-		public int getOccurrences( String option);
-
-		/**
 		 * Returns the option names used for an option, in the order they occurred.
 		 * 
 		 * @param option
 		 * @return
 		 */
-		public List< String> getNames( String option);
+		public LinkedList< String> getNames( String option);
 
 		/**
 		 * Returns the option-arguments of an option, in the order they occurred. Occurrences without arguments produce <code>null</code>s.
@@ -97,31 +81,13 @@ public interface Syntax {
 		 * @param option
 		 * @return
 		 */
-		public List< String> getArguments( String option);
-
-		/**
-		 * Returns the option-argument in the first occurrence of an option, or <code>null</code> if the option never occurred, or not with
-		 * an argument in the first occurrence.
-		 * 
-		 * @param option
-		 * @return
-		 */
-		public String getFirstArgument( String option);
-
-		/**
-		 * Returns the option-argument in the last occurrence of an option, or <code>null</code> if the option never occurred, or not with
-		 * an argument in the last occurrence.
-		 * 
-		 * @param option
-		 * @return
-		 */
-		public String getLastArgument( String option);
+		public LinkedList< String> getArguments( String option);
 
 		/**
 		 * Returns all operands.
 		 * 
 		 * @return
 		 */
-		public List< String> getOperands();
+		public LinkedList< String> getOperands();
 	}
 }

@@ -12,7 +12,6 @@
  */
 package org.musiel.args.syntax;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.TreeMap;
 import org.musiel.args.Option;
 import org.musiel.args.syntax.Syntax.ParseResult;
 
-public abstract class AbstractResult implements ParseResult {
+public abstract class AbstractParseResult implements ParseResult {
 
 	protected final Map< String, Option> optionDictionary = new TreeMap<>();
 
@@ -38,43 +37,17 @@ public abstract class AbstractResult implements ParseResult {
 	}
 
 	@ Override
-	public List< String> getNames( final String option) {
-		return Collections.unmodifiableList( this.optionNames.get( this.getOption( option)));
-	}
-
-	private LinkedList< String> getArgumentsAsLinkedList( final String option) {
-		return this.optionArguments.get( this.getOption( option));
+	public LinkedList< String> getNames( final String option) {
+		return new LinkedList<>( this.optionNames.get( this.getOption( option)));
 	}
 
 	@ Override
-	public List< String> getArguments( final String option) {
-		return Collections.unmodifiableList( this.getArgumentsAsLinkedList( option));
+	public LinkedList< String> getArguments( final String option) {
+		return new LinkedList<>( this.optionArguments.get( this.getOption( option)));
 	}
 
 	@ Override
-	public boolean isOccurred( final String option) {
-		return !this.getNames( option).isEmpty();
-	}
-
-	@ Override
-	public int getOccurrences( final String option) {
-		return this.getNames( option).size();
-	}
-
-	@ Override
-	public String getFirstArgument( final String option) {
-		final LinkedList< String> arguments = this.getArgumentsAsLinkedList( option);
-		return arguments.isEmpty()? null: arguments.getFirst();
-	}
-
-	@ Override
-	public String getLastArgument( final String option) {
-		final LinkedList< String> arguments = this.getArgumentsAsLinkedList( option);
-		return arguments.isEmpty()? null: arguments.getLast();
-	}
-
-	@ Override
-	public List< String> getOperands() {
-		return Collections.unmodifiableList( this.operands);
+	public LinkedList< String> getOperands() {
+		return new LinkedList<>( this.operands);
 	}
 }

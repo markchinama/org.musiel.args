@@ -113,7 +113,7 @@ public class PosixSyntax implements Syntax {
 		return new PosixMachine( options);
 	}
 
-	protected class PosixMachine extends AbstractResult {
+	protected class PosixMachine extends AbstractParseResult {
 
 		protected PosixMachine( final Set< Option> options) {
 			for( final Option option: options) {

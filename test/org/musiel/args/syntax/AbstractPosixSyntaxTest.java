@@ -205,12 +205,12 @@ public abstract class AbstractPosixSyntaxTest {
 	@ Test
 	public void testParse() throws ParserException {
 		final ParseResult result = this.syntax.parse( this.options, "-a", "-o", "file1", "-o", "-", "-", "xyz", "--", "-a", "-a");
-		Assert.assertTrue( result.isOccurred( "-a"));
-		Assert.assertFalse( result.isOccurred( "-b"));
-		Assert.assertTrue( result.isOccurred( "-o"));
-		Assert.assertEquals( 1, result.getOccurrences( "-a"));
-		Assert.assertEquals( 0, result.getOccurrences( "-b"));
-		Assert.assertEquals( 2, result.getOccurrences( "-o"));
+		Assert.assertFalse( result.getNames( "-a").isEmpty());
+		Assert.assertTrue( result.getNames( "-b").isEmpty());
+		Assert.assertFalse( result.getNames( "-o").isEmpty());
+		Assert.assertEquals( 1, result.getNames( "-a").size());
+		Assert.assertEquals( 0, result.getNames( "-b").size());
+		Assert.assertEquals( 2, result.getNames( "-o").size());
 		Assert.assertArrayEquals( new String[]{ "file1", "-"}, result.getArguments( "-o").toArray());
 		Assert.assertArrayEquals( new String[]{ "-", "xyz", "-a", "-a"}, result.getOperands().toArray());
 	}
@@ -219,12 +219,12 @@ public abstract class AbstractPosixSyntaxTest {
 	public void testParseJoint() throws ParserException {
 		this.syntax.setJointArgumentsAllowed( true);
 		final ParseResult result = this.syntax.parse( this.options, "-a", "-o", "file1", "-ooutput2", "-", "xyz", "--", "-a", "-a");
-		Assert.assertTrue( result.isOccurred( "-a"));
-		Assert.assertFalse( result.isOccurred( "-b"));
-		Assert.assertTrue( result.isOccurred( "-o"));
-		Assert.assertEquals( 1, result.getOccurrences( "-a"));
-		Assert.assertEquals( 0, result.getOccurrences( "-b"));
-		Assert.assertEquals( 2, result.getOccurrences( "-o"));
+		Assert.assertFalse( result.getNames( "-a").isEmpty());
+		Assert.assertTrue( result.getNames( "-b").isEmpty());
+		Assert.assertFalse( result.getNames( "-o").isEmpty());
+		Assert.assertEquals( 1, result.getNames( "-a").size());
+		Assert.assertEquals( 0, result.getNames( "-b").size());
+		Assert.assertEquals( 2, result.getNames( "-o").size());
 		Assert.assertArrayEquals( new String[]{ "file1", "output2"}, result.getArguments( "-o").toArray());
 		Assert.assertArrayEquals( new String[]{ "-", "xyz", "-a", "-a"}, result.getOperands().toArray());
 	}
@@ -237,14 +237,14 @@ public abstract class AbstractPosixSyntaxTest {
 		this.syntax.setLateOptionsAllowed( true);
 		final ParseResult result =
 				this.syntax.parse( options, "-a", "-abpp1", "-o", "file1", "-p", "-", "xyz", "-pprofile1", "-o-", "--", "-a", "-a");
-		Assert.assertTrue( result.isOccurred( "-a"));
-		Assert.assertTrue( result.isOccurred( "-b"));
-		Assert.assertTrue( result.isOccurred( "-o"));
-		Assert.assertTrue( result.isOccurred( "-p"));
-		Assert.assertEquals( 2, result.getOccurrences( "-a"));
-		Assert.assertEquals( 1, result.getOccurrences( "-b"));
-		Assert.assertEquals( 2, result.getOccurrences( "-o"));
-		Assert.assertEquals( 3, result.getOccurrences( "-p"));
+		Assert.assertFalse( result.getNames( "-a").isEmpty());
+		Assert.assertFalse( result.getNames( "-b").isEmpty());
+		Assert.assertFalse( result.getNames( "-o").isEmpty());
+		Assert.assertFalse( result.getNames( "-p").isEmpty());
+		Assert.assertEquals( 2, result.getNames( "-a").size());
+		Assert.assertEquals( 1, result.getNames( "-b").size());
+		Assert.assertEquals( 2, result.getNames( "-o").size());
+		Assert.assertEquals( 3, result.getNames( "-p").size());
 		Assert.assertArrayEquals( new String[]{ "file1", "-"}, result.getArguments( "-o").toArray());
 		Assert.assertArrayEquals( new String[]{ "p1", null, "profile1"}, result.getArguments( "-p").toArray());
 		Assert.assertArrayEquals( new String[]{ "-", "xyz", "-a", "-a"}, result.getOperands().toArray());
