@@ -51,7 +51,7 @@ public abstract class AbstractParser< RESULT> implements Parser< RESULT> {
 
 	@ Override
 	public List< ? extends Option> getOptions() {
-		return new LinkedList<>( this.options);
+		return Collections.unmodifiableList( new LinkedList<>( this.options));
 	}
 
 	@ Override

@@ -17,8 +17,52 @@ import java.io.File;
 import org.junit.Assert;
 import org.junit.Test;
 import org.musiel.args.ParserException;
+import org.musiel.args.Result;
+import org.musiel.args.generic.AbstractParser;
+import org.musiel.args.generic.AbstractParserTest;
 
-public class ReflectParserTest {
+public class ReflectParserTest extends AbstractParserTest {
+
+	private static class ClassNotInterface {
+	}
+
+	@ Test( expected = IllegalArgumentException.class)
+	public void classesFail() {
+		new ReflectParser<>( ClassNotInterface.class);
+	}
+
+	private static enum EnumNotInterface {
+	}
+
+	@ Test( expected = IllegalArgumentException.class)
+	public void enumsFail() {
+		new ReflectParser<>( EnumNotInterface.class);
+	}
+
+	private static interface EmptyInterface {
+	}
+
+	@ Test
+	public void emptyInterfacePasses() throws ParserException {
+		new ReflectParser<>( EmptyInterface.class).parse();
+	}
+
+	private static interface WrongAnnotations1 {
+
+		@ Option
+		@ Operands
+		boolean version();
+	}
+
+	@ Test( expected = IllegalArgumentException.class)
+	public void wrongAnnotations() {
+		new ReflectParser<>( WrongAnnotations1.class);
+	}
+
+	@ Override
+	protected AbstractParser< Result> newParser() {
+		return new ReflectParser<>( Result.class);
+	}
 
 	@ OperandPattern( "[INPUT... OUTPUT]")
 	private static interface Options {

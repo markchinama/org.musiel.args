@@ -89,7 +89,7 @@ public class PosixSyntax implements Syntax {
 	@ Override
 	public void validate( final Option option) throws IllegalArgumentException {
 		if( !this.optionalArgumentsAllowed && option.isArgumentAccepted() && !option.isArgumentRequired())
-			throw new IllegalArgumentException( "Optional option-argument is not allowed (by configuration)");
+			throw new IllegalArgumentException( "optional option-argument is not allowed (by configuration)");
 		for( final String name: option.getNames())
 			this.validateName( name);
 	}
