@@ -10,7 +10,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.reflect;
+package org.musiel.args.reflect.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
@@ -18,20 +18,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Defines option names
- * 
- * @author Bagana
- */
-@ Target( ElementType.METHOD)
+@ Target( { ElementType.METHOD, ElementType.TYPE})
 @ Retention( RetentionPolicy.RUNTIME)
 @ Inherited
-public @ interface Option {
+public @ interface Description {
 
 	/**
-	 * Option names.
+	 * A human-readable description, typically used in printing help messages
 	 * 
 	 * @return
 	 */
-	public String[] value() default {};
+	public String value() default "";
 }

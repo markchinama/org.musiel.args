@@ -30,6 +30,7 @@ import org.musiel.args.ParserException;
 import org.musiel.args.Result;
 import org.musiel.args.generic.AbstractParser;
 import org.musiel.args.generic.GenericAccessor;
+import org.musiel.args.reflect.annotation.OperandPattern;
 import org.musiel.args.syntax.GnuSyntax;
 import org.musiel.args.syntax.Syntax;
 import org.musiel.args.syntax.Syntax.SyntaxResult;

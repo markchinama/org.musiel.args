@@ -19,7 +19,12 @@ import java.util.regex.Pattern;
 
 import org.musiel.args.DefaultAccessor;
 import org.musiel.args.operand.OperandPattern;
-import org.musiel.args.reflect.Argument.ArgumentStrategy;
+import org.musiel.args.reflect.annotation.Argument;
+import org.musiel.args.reflect.annotation.Operands;
+import org.musiel.args.reflect.annotation.Option;
+import org.musiel.args.reflect.annotation.Repeatable;
+import org.musiel.args.reflect.annotation.Required;
+import org.musiel.args.reflect.annotation.Argument.ArgumentStrategy;
 
 abstract class MethodHandler {
 

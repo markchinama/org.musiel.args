@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.musiel.args.reflect.Argument.ArgumentStrategy;
+import org.musiel.args.reflect.annotation.Argument.ArgumentStrategy;
 
 class ReturnValueConstructor {
 

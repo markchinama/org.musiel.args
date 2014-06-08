@@ -21,6 +21,9 @@ import org.musiel.args.ParserException;
 import org.musiel.args.Result;
 import org.musiel.args.generic.AbstractParser;
 import org.musiel.args.generic.AbstractParserTest;
+import org.musiel.args.reflect.annotation.OperandPattern;
+import org.musiel.args.reflect.annotation.Operands;
+import org.musiel.args.reflect.annotation.Option;
 
 public class ReflectParserTest extends AbstractParserTest {
 
