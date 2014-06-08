@@ -52,7 +52,7 @@ public abstract class AbstractParseResult implements SyntaxResult {
 	}
 
 	private List< String> getNamesInternal( final String optionName) {
-		String canonicalName = this.getCanonicalName( optionName);
+		final String canonicalName = this.getCanonicalName( optionName);
 		List< String> list = this.optionNames.get( canonicalName);
 		if( list == null)
 			this.optionNames.put( canonicalName, list = new LinkedList<>());
@@ -60,14 +60,14 @@ public abstract class AbstractParseResult implements SyntaxResult {
 	}
 
 	private List< String> getArgumentsInternal( final String optionName) {
-		String canonicalName = this.getCanonicalName( optionName);
+		final String canonicalName = this.getCanonicalName( optionName);
 		List< String> list = this.optionArguments.get( canonicalName);
 		if( list == null)
 			this.optionArguments.put( canonicalName, list = new LinkedList<>());
 		return list;
 	}
 
-	protected void push( String optionName, String optionArgument) {
+	protected void push( final String optionName, final String optionArgument) {
 		this.getNamesInternal( optionName).add( optionName);
 		this.getArgumentsInternal( optionName).add( optionArgument);
 	}
@@ -98,7 +98,7 @@ public abstract class AbstractParseResult implements SyntaxResult {
 			if( !option.isRepeatable() && names != null && names.size() > 1)
 				this.errors.add( new SyntaxException( Reason.TOO_MANY_OCCURRENCES, names.get( 1), names));
 
-			if( !option.isArgumentAccepted()) {
+			if( !option.getArgumentPolicy().isAccepted()) {
 				final Iterator< String> nameIterator = names.iterator();
 				final Iterator< String> argumentIterator = arguments.iterator();
 				while( nameIterator.hasNext()) {
@@ -109,7 +109,7 @@ public abstract class AbstractParseResult implements SyntaxResult {
 				}
 			}
 
-			if( option.isArgumentRequired()) {
+			if( option.getArgumentPolicy().isRequired()) {
 				final Iterator< String> nameIterator = names.iterator();
 				final Iterator< String> argumentIterator = arguments.iterator();
 				while( nameIterator.hasNext()) {

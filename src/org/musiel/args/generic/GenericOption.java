@@ -19,6 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.Option;
 
 /**
@@ -28,12 +29,20 @@ import org.musiel.args.Option;
  */
 class GenericOption implements Option {
 
+	private final Set< String> names;
 	private final boolean required;
 	private final boolean repeatable;
-	private final boolean acceptsArgument;
-	private final boolean requiresArgument;
+	private final ArgumentPolicy argumentPolicy;
 
-	private final Set< String> names;
+	@ Override
+	public String getName() {
+		return this.names.iterator().next();
+	}
+
+	@ Override
+	public Set< String> getNames() {
+		return this.names;
+	}
 
 	@ Override
 	public boolean isRequired() {
@@ -46,23 +55,8 @@ class GenericOption implements Option {
 	}
 
 	@ Override
-	public boolean isArgumentAccepted() {
-		return this.acceptsArgument;
-	}
-
-	@ Override
-	public boolean isArgumentRequired() {
-		return this.requiresArgument;
-	}
-
-	@ Override
-	public String getName() {
-		return this.names.iterator().next();
-	}
-
-	@ Override
-	public Set< String> getNames() {
-		return this.names;
+	public ArgumentPolicy getArgumentPolicy() {
+		return this.argumentPolicy;
 	}
 
 	/**
@@ -83,27 +77,25 @@ class GenericOption implements Option {
 	 * @param name
 	 * @param additionalNames
 	 */
-	public GenericOption( final boolean required, final boolean repeatable, final boolean acceptsArgument, final boolean requiresArgument,
+	public GenericOption( final boolean required, final boolean repeatable, final ArgumentPolicy argumentPolicy,
 			final Collection< String> names) {
-		if( !acceptsArgument && requiresArgument)
-			throw new IllegalArgumentException( "requiresArgument must be false when acceptsArgument is false");
+		if( argumentPolicy == null)
+			throw new NullPointerException();
 		final Set< String> nameSet = new LinkedHashSet<>( names);
 		if( nameSet.isEmpty())
 			throw new IllegalArgumentException( "name set must not be empty");
 		if( nameSet.contains( null))
 			throw new NullPointerException( "name must not be null");
 
+		this.names = Collections.unmodifiableSet( nameSet);
 		this.required = required;
 		this.repeatable = repeatable;
-		this.acceptsArgument = acceptsArgument;
-		this.requiresArgument = requiresArgument;
-
-		this.names = Collections.unmodifiableSet( nameSet);
+		this.argumentPolicy = argumentPolicy;
 	}
 
-	public GenericOption( final boolean required, final boolean repeatable, final boolean acceptsArgument, final boolean requiresArgument,
-			final String name, final String... aliases) {
-		this( required, repeatable, acceptsArgument, requiresArgument, GenericOption.nameSet( name, aliases));
+	public GenericOption( final boolean required, final boolean repeatable, final ArgumentPolicy argumentPolicy, final String name,
+			final String... aliases) {
+		this( required, repeatable, argumentPolicy, GenericOption.nameSet( name, aliases));
 	}
 
 	private static Collection< String> nameSet( final String primaryName, final String[] additionalNames) {

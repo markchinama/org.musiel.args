@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.DefaultAccessor;
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
@@ -43,9 +44,9 @@ public class ReflectParser< MODEL> extends AbstractParser< Result< MODEL>> {
 	}
 
 	@ Override
-	public Option newOption( final boolean required, final boolean repeatable, final boolean acceptsArgument,
-			final boolean requiresArgument, final String name, final String... aliases) {
-		return super.newOption( required, repeatable, acceptsArgument, requiresArgument, name, aliases);
+	public Option newOption( final boolean required, final boolean repeatable, final ArgumentPolicy argumentPolicy, final String name,
+			final String... aliases) {
+		return super.newOption( required, repeatable, argumentPolicy, name, aliases);
 	}
 
 	public ReflectParser( final Class< MODEL> resultType) {

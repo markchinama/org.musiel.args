@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.Option;
 import org.musiel.args.Parser;
 import org.musiel.args.ParserException;
@@ -62,12 +63,12 @@ public abstract class AbstractParser< RESULT extends Result< ?>> implements Pars
 	}
 
 	protected Option newOption( final String name, final String... aliases) {
-		return this.newOption( false, false, false, false, name, aliases);
+		return this.newOption( false, false, ArgumentPolicy.NONE, name, aliases);
 	}
 
-	protected Option newOption( final boolean required, final boolean repeatable, final boolean acceptsArgument,
-			final boolean requiresArgument, final String name, final String... aliases) {
-		final Option option = new GenericOption( required, repeatable, acceptsArgument, requiresArgument, name, aliases);
+	protected Option newOption( final boolean required, final boolean repeatable, final ArgumentPolicy argumentPolicy, final String name,
+			final String... aliases) {
+		final Option option = new GenericOption( required, repeatable, argumentPolicy, name, aliases);
 		this.syntax.validate( option);
 		for( final String optionName: option.getNames())
 			if( this.optionDictionary.containsKey( optionName))

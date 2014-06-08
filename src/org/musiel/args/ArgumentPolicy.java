@@ -10,20 +10,29 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.reflect.annotation;
+package org.musiel.args;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public enum ArgumentPolicy {
 
-import org.musiel.args.ArgumentPolicy;
+	NONE( false, false),
 
-@ Target( ElementType.METHOD)
-@ Retention( RetentionPolicy.RUNTIME)
-@ Inherited
-public @ interface Argument {
+	OPTIONAL( true, false),
 
-	public ArgumentPolicy value();
+	REQUIRED( true, true);
+
+	private final boolean accepted;
+	private final boolean required;
+
+	public boolean isAccepted() {
+		return this.accepted;
+	}
+
+	public boolean isRequired() {
+		return this.required;
+	}
+
+	private ArgumentPolicy( final boolean accepted, final boolean required) {
+		this.accepted = accepted;
+		this.required = required;
+	}
 }

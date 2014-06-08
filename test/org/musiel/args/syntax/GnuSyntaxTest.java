@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.Option;
 import org.musiel.args.syntax.Syntax.SyntaxResult;
 import org.musiel.args.syntax.SyntaxException.Reason;
@@ -61,8 +62,8 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 	@ Test
 	public void testUnknownLongName() {
 		final Set< Option> options = new HashSet<>( this.options);
-		options.add( this.option( false, true, true, true, "--ignore", "-I"));
-		options.add( this.option( false, true, true, true, "--ignore-file", "-F"));
+		options.add( this.option( false, true, ArgumentPolicy.REQUIRED, "--ignore", "-I"));
+		options.add( this.option( false, true, ArgumentPolicy.REQUIRED, "--ignore-file", "-F"));
 		Assert.assertTrue( this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file").getErrors().isEmpty());
 		this.verifyException( this.syntax.parse( options, "--ignored", "ignored", "--ignor=ignored-file").getErrors(),
 				Reason.UNKNOWN_OPTION);
@@ -71,8 +72,8 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 	@ Test
 	public void testUnknownLongName2() {
 		final Set< Option> options = new HashSet<>( this.options);
-		options.add( this.option( false, true, true, true, "--ignore", "-I"));
-		options.add( this.option( false, true, true, true, "--ignore-file", "-F"));
+		options.add( this.option( false, true, ArgumentPolicy.REQUIRED, "--ignore", "-I"));
+		options.add( this.option( false, true, ArgumentPolicy.REQUIRED, "--ignore-file", "-F"));
 		Assert.assertTrue( this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file").getErrors().isEmpty());
 		this.verifyException( this.syntax.parse( options, "--ignore", "ignored", "--ignor?=ignored-file").getErrors(),
 				Reason.UNKNOWN_OPTION);
@@ -81,7 +82,7 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 	@ Test
 	public void testAbbreviationDisabled() {
 		final Set< Option> options = new HashSet<>( this.options);
-		options.add( this.option( false, true, true, true, "--ignore", "-I"));
+		options.add( this.option( false, true, ArgumentPolicy.REQUIRED, "--ignore", "-I"));
 		Assert.assertTrue( this.syntax.parse( options, "--ign", "ignored").getErrors().isEmpty());
 		( ( GnuSyntax) this.syntax).setAbbreviationAllowed( false);
 		this.verifyException( this.syntax.parse( options, "--ign", "ignored").getErrors(), Reason.UNKNOWN_OPTION);
@@ -90,8 +91,8 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 	@ Test
 	public void testAmbiguous() {
 		final Set< Option> options = new HashSet<>( this.options);
-		options.add( this.option( false, true, true, true, "--ignore", "-I"));
-		options.add( this.option( false, true, true, true, "--ignore-file", "-F"));
+		options.add( this.option( false, true, ArgumentPolicy.REQUIRED, "--ignore", "-I"));
+		options.add( this.option( false, true, ArgumentPolicy.REQUIRED, "--ignore-file", "-F"));
 
 		SyntaxResult result = this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file");
 		Assert.assertTrue( result.getErrors().isEmpty());
@@ -110,8 +111,8 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 	@ Test
 	public void testParseOptionalGnu() {
 		final Set< Option> options = new HashSet<>( this.options);
-		options.add( this.option( false, true, true, false, "--profile", "-p"));
-		options.add( this.option( false, true, true, true, "--ignore", "-I"));
+		options.add( this.option( false, true, ArgumentPolicy.OPTIONAL, "--profile", "-p"));
+		options.add( this.option( false, true, ArgumentPolicy.REQUIRED, "--ignore", "-I"));
 		this.syntax.setOptionalArgumentsAllowed( true);
 		final SyntaxResult result =
 				this.syntax.parse( options, "-a", "-abpp1", "-o", "file1", "-p", "--profile", "--ignore", "ignored", "--ign=ignored2", "-",

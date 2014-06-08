@@ -150,15 +150,15 @@ public class GnuMonoTermPrinter implements HelpMessagePrinter {
 			if( !option.isRequired())
 				builder.append( '[');
 			builder.append( option.getName());
-			if( option.isArgumentAccepted()) {
-				if( option.isArgumentRequired())
+			if( option.getArgumentPolicy().isAccepted()) {
+				if( option.getArgumentPolicy().isRequired())
 					builder.append( ' ');
 				else if( option.getName().startsWith( "--"))
 					builder.append( "[=");
 				else
 					builder.append( '[');
 				builder.append( resource.getArgumentName( option.getName()));
-				if( !option.isArgumentRequired())
+				if( !option.getArgumentPolicy().isRequired())
 					builder.append( ']');
 			}
 			if( !option.isRequired())
@@ -178,15 +178,15 @@ public class GnuMonoTermPrinter implements HelpMessagePrinter {
 			builder.append( name);
 			lastIsLongOption = name.startsWith( "--");
 		}
-		if( option.isArgumentAccepted()) {
-			if( option.isArgumentRequired())
+		if( option.getArgumentPolicy().isAccepted()) {
+			if( option.getArgumentPolicy().isRequired())
 				builder.append( ' ');
 			else if( lastIsLongOption)
 				builder.append( "[=");
 			else
 				builder.append( '[');
 			builder.append( resource.getArgumentName( option.getName()));
-			if( !option.isArgumentRequired())
+			if( !option.getArgumentPolicy().isRequired())
 				builder.append( ']');
 		}
 		return builder.toString();

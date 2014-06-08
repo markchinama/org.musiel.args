@@ -23,36 +23,6 @@ import java.util.Set;
 public interface Option {
 
 	/**
-	 * Indicates whether this option must occur at least once (under any name of its) in an argument array.
-	 * 
-	 * @return
-	 */
-	public boolean isRequired();
-
-	/**
-	 * Indicates whether this option can occur more than once (possibly under different names) in an argument array.
-	 * 
-	 * @return
-	 */
-	public boolean isRepeatable();
-
-	/**
-	 * Indicates whether an option-argument is allowed for this option. Returning <code>true</code> does not imply that an option-argument
-	 * is required, which is indicated by {@link #isArgumentRequired()}.
-	 * 
-	 * @return
-	 */
-	public boolean isArgumentAccepted();
-
-	/**
-	 * Indicates whether an option-argument is required. {@link #isArgumentAccepted()} must be <code>true</code> when this method is
-	 * <code>true</code>.
-	 * 
-	 * @return
-	 */
-	public boolean isArgumentRequired();
-
-	/**
 	 * The primary name (since an option can have more than one names) of the option, typically used for help messages or exception
 	 * messages. This method MUST return an element of what {@link #getNames()} would return, and is never <code>null</code>.
 	 * 
@@ -67,4 +37,25 @@ public interface Option {
 	 * @return
 	 */
 	public Set< String> getNames();
+
+	/**
+	 * Indicates whether this option must occur at least once (under any name of its) in an argument array.
+	 * 
+	 * @return
+	 */
+	public boolean isRequired();
+
+	/**
+	 * Indicates whether this option can occur more than once (possibly under different names) in an argument array.
+	 * 
+	 * @return
+	 */
+	public boolean isRepeatable();
+
+	/**
+	 * Returns the argument policy. Not <code>null</code>.
+	 * 
+	 * @return
+	 */
+	public ArgumentPolicy getArgumentPolicy();
 }

@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
 import org.musiel.args.syntax.GnuSyntax;
@@ -38,9 +39,9 @@ public class GenericParser extends AbstractParser< GenericResult> {
 	}
 
 	@ Override
-	public Option newOption( final boolean required, final boolean repeatable, final boolean acceptsArgument,
-			final boolean requiresArgument, final String name, final String... aliases) {
-		return super.newOption( required, repeatable, acceptsArgument, requiresArgument, name, aliases);
+	public Option newOption( final boolean required, final boolean repeatable, final ArgumentPolicy argumentPolicy, final String name,
+			final String... aliases) {
+		return super.newOption( required, repeatable, argumentPolicy, name, aliases);
 	}
 
 	@ Override

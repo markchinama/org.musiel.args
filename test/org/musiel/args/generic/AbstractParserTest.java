@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.DefaultAccessor;
 import org.musiel.args.ParserException;
 import org.musiel.args.Result;
@@ -41,8 +42,7 @@ public abstract class AbstractParserTest {
 		Assert.assertEquals( 1, this.parser.getOptions().size());
 		Assert.assertFalse( this.parser.getOption( "-a").isRequired());
 		Assert.assertFalse( this.parser.getOption( "-a").isRepeatable());
-		Assert.assertFalse( this.parser.getOption( "-a").isArgumentAccepted());
-		Assert.assertFalse( this.parser.getOption( "-a").isArgumentRequired());
+		Assert.assertEquals( ArgumentPolicy.NONE, this.parser.getOption( "-a").getArgumentPolicy());
 		Assert.assertArrayEquals( new String[]{ "-a", "--all"}, this.parser.getOption( "-a").getNames().toArray());
 		this.exceptions.expect( UnsupportedOperationException.class);
 		this.parser.getOptions().iterator().remove();
@@ -52,7 +52,7 @@ public abstract class AbstractParserTest {
 	public void unsupportedOption() {
 		this.exceptions.expect( IllegalArgumentException.class);
 		this.exceptions.expectMessage( "optional option-argument is not allowed");
-		this.parser.newOption( false, true, true, false, "-m");
+		this.parser.newOption( false, true, ArgumentPolicy.OPTIONAL, "-m");
 	}
 
 	@ Test

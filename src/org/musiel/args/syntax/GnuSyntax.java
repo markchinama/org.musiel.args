@@ -125,7 +125,7 @@ public class GnuSyntax extends PosixSyntax {
 				else
 					this.errors.add( new SyntaxException( Reason.UNKNOWN_OPTION, name));
 
-			if( argument != null || option != null && !option.isArgumentRequired())
+			if( argument != null || option != null && !option.getArgumentPolicy().isRequired())
 				this.push( name, argument);
 			else {
 				this.openOptionName = name;

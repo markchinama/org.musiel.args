@@ -85,7 +85,7 @@ public class PosixSyntax implements Syntax {
 
 	@ Override
 	public void validate( final Option option) throws IllegalArgumentException {
-		if( !this.optionalArgumentsAllowed && option.isArgumentAccepted() && !option.isArgumentRequired())
+		if( !this.optionalArgumentsAllowed && option.getArgumentPolicy().isAccepted() && !option.getArgumentPolicy().isRequired())
 			throw new IllegalArgumentException( "optional option-argument is not allowed (by configuration)");
 		for( final String name: option.getNames())
 			this.validateName( name);
@@ -166,7 +166,7 @@ public class PosixSyntax implements Syntax {
 				this.errors.add( new SyntaxException( Reason.UNKNOWN_OPTION, firstOptionName));
 
 			if( arg.length() == 2) {
-				if( option == null || option.isArgumentRequired()) {
+				if( option == null || option.getArgumentPolicy().isRequired()) {
 					this.openOptionName = firstOptionName;
 					this.openOption = option;
 				} else
@@ -174,7 +174,7 @@ public class PosixSyntax implements Syntax {
 				return;
 			}
 
-			if( option == null || !option.isArgumentAccepted() || !PosixSyntax.this.isJointArgumentsAllowed()) {
+			if( option == null || !option.getArgumentPolicy().isAccepted() || !PosixSyntax.this.isJointArgumentsAllowed()) {
 				this.push( firstOptionName, null);
 				this.handleShortOption( "-" + arg.substring( 2));
 				return;

@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.DefaultAccessor;
 import org.musiel.args.operand.OperandPattern;
 import org.musiel.args.reflect.annotation.Argument;
@@ -24,7 +25,6 @@ import org.musiel.args.reflect.annotation.Operands;
 import org.musiel.args.reflect.annotation.Option;
 import org.musiel.args.reflect.annotation.Repeatable;
 import org.musiel.args.reflect.annotation.Required;
-import org.musiel.args.reflect.annotation.Argument.ArgumentStrategy;
 
 abstract class MethodHandler {
 
@@ -132,7 +132,7 @@ class OptionHandler extends MethodHandler {
 				OptionHandler.throwIllegalAnnotation( Repeatable.class, repeatableAnnotation.value(), method);
 
 		// argument
-		ArgumentStrategy argument = this.expectation.argument();
+		ArgumentPolicy argument = this.expectation.argument();
 		final Argument argumentAnnotation = method.getAnnotation( Argument.class);
 		if( argumentAnnotation != null && !argumentAnnotation.value().equals( argument))
 			if( this.expectation.argumentChangeable())
@@ -141,7 +141,7 @@ class OptionHandler extends MethodHandler {
 				OptionHandler.throwIllegalAnnotation( Argument.class, argumentAnnotation.value(), method);
 
 		// register
-		parser.newOption( required, repeatable, argument.accepts, argument.requires, this.name, aliases);
+		parser.newOption( required, repeatable, argument, this.name, aliases);
 	}
 
 	@ Override
@@ -154,7 +154,7 @@ abstract class AbstractOperandHandler extends MethodHandler {
 
 	protected AbstractOperandHandler( final Method method, final boolean absentPossible, final boolean multiplePossible, final String name) {
 		super( method);
-		if( !this.expectation.argument().accepts && !this.expectation.argumentChangeable())
+		if( !this.expectation.argument().isAccepted() && !this.expectation.argumentChangeable())
 			throw new IllegalArgumentException( "methods with return type " + method.getReturnType().getName()
 					+ " cannot be used for operand list");
 		if( absentPossible && this.expectation.required() && !this.expectation.requiredChangeable())

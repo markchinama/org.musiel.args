@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.musiel.args.reflect.annotation.Argument.ArgumentStrategy;
+import org.musiel.args.ArgumentPolicy;
 
 class ReturnValueConstructor {
 
@@ -113,10 +113,10 @@ class ReturnValueConstructor {
 
 enum Category {
 
-	@ Expectation( required = true, argument = ArgumentStrategy.NONE, argumentChangeable = false)
+	@ Expectation( required = true, argument = ArgumentPolicy.NONE, argumentChangeable = false)
 	MANDATORY_FLAG,
 
-	@ Expectation( argument = ArgumentStrategy.NONE, argumentChangeable = false)
+	@ Expectation( argument = ArgumentPolicy.NONE, argumentChangeable = false)
 	FLAG,
 
 	@ Expectation( required = true, requiredChangeable = false, repeatableChangeable = false, argumentChangeable = false)
@@ -144,7 +144,7 @@ enum Category {
 
 	public boolean repeatableChangeable() default true;
 
-	public ArgumentStrategy argument() default ArgumentStrategy.REQUIRED;
+	public ArgumentPolicy argument() default ArgumentPolicy.REQUIRED;
 
 	public boolean argumentChangeable() default true;
 }

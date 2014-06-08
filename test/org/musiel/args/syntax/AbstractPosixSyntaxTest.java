@@ -22,6 +22,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.Option;
 import org.musiel.args.syntax.Syntax.SyntaxResult;
 import org.musiel.args.syntax.SyntaxException.Reason;
@@ -37,11 +38,11 @@ public abstract class AbstractPosixSyntaxTest {
 	public abstract void setup();
 
 	protected Option option( final String firstName, final String... additionalNames) {
-		return this.option( false, true, false, false, firstName, additionalNames);
+		return this.option( false, true, ArgumentPolicy.NONE, firstName, additionalNames);
 	}
 
-	protected Option option( final boolean required, final boolean repeatable, final boolean argumentAccepted,
-			final boolean argumentRequired, final String firstName, final String... additionalNames) {
+	protected Option option( final boolean required, final boolean repeatable, final ArgumentPolicy argumentPolicy,
+			final String firstName, final String... additionalNames) {
 		final Set< String> nameSet = new HashSet<>();
 		nameSet.add( firstName);
 		Collections.addAll( nameSet, additionalNames);
@@ -58,13 +59,8 @@ public abstract class AbstractPosixSyntaxTest {
 			}
 
 			@ Override
-			public boolean isArgumentAccepted() {
-				return argumentAccepted;
-			}
-
-			@ Override
-			public boolean isArgumentRequired() {
-				return argumentRequired;
+			public ArgumentPolicy getArgumentPolicy() {
+				return argumentPolicy;
 			}
 
 			@ Override
@@ -134,20 +130,20 @@ public abstract class AbstractPosixSyntaxTest {
 
 	@ Test
 	public void testOptionalArgumentDisallowed() {
-		this.testInvalidOption( this.option( false, true, true, false, "-a", "-3"));
-		this.syntax.validate( this.option( false, true, true, true, "-a", "-3"));
+		this.testInvalidOption( this.option( false, true, ArgumentPolicy.OPTIONAL, "-a", "-3"));
+		this.syntax.validate( this.option( false, true, ArgumentPolicy.REQUIRED, "-a", "-3"));
 	}
 
 	@ Test
 	public void testOptionalArgumentAllowed() {
 		this.syntax.setOptionalArgumentsAllowed( true);
-		this.syntax.validate( this.option( false, true, true, false, "-a", "-3"));
-		this.syntax.validate( this.option( false, true, true, true, "-a", "-3"));
+		this.syntax.validate( this.option( false, true, ArgumentPolicy.OPTIONAL, "-a", "-3"));
+		this.syntax.validate( this.option( false, true, ArgumentPolicy.REQUIRED, "-a", "-3"));
 	}
 
 	protected final Option optionA = this.option( "-a");
 	protected final Option optionB = this.option( "-b");
-	protected final Option optionO = this.option( false, true, true, true, "-o");
+	protected final Option optionO = this.option( false, true, ArgumentPolicy.REQUIRED, "-o");
 	protected final Set< Option> options = new HashSet<>();
 	{
 		this.options.add( this.optionA);
@@ -242,7 +238,7 @@ public abstract class AbstractPosixSyntaxTest {
 	@ Test
 	public void parseOptional() {
 		final Set< Option> options = new HashSet<>( this.options);
-		options.add( this.option( false, true, true, false, "-p"));
+		options.add( this.option( false, true, ArgumentPolicy.OPTIONAL, "-p"));
 		this.syntax.setOptionalArgumentsAllowed( true);
 		this.syntax.setLateOptionsAllowed( true);
 		final SyntaxResult result =
