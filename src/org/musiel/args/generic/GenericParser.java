@@ -12,12 +12,17 @@
  */
 package org.musiel.args.generic;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import org.musiel.args.Option;
-import org.musiel.args.Result;
+import org.musiel.args.ParserException;
 import org.musiel.args.syntax.GnuSyntax;
 import org.musiel.args.syntax.Syntax;
+import org.musiel.args.syntax.Syntax.SyntaxResult;
 
-public class GenericParser extends AbstractParser< Result> {
+public class GenericParser extends AbstractParser< GenericResult> {
 
 	public GenericParser() {
 		this( new GnuSyntax());
@@ -28,23 +33,24 @@ public class GenericParser extends AbstractParser< Result> {
 	}
 
 	@ Override
-	protected Option newOption( final String name, final String... aliases) {
+	public Option newOption( final String name, final String... aliases) {
 		return super.newOption( name, aliases);
 	}
 
 	@ Override
-	protected Option newOption( final boolean required, final boolean repeatable, final boolean acceptsArgument,
+	public Option newOption( final boolean required, final boolean repeatable, final boolean acceptsArgument,
 			final boolean requiresArgument, final String name, final String... aliases) {
 		return super.newOption( required, repeatable, acceptsArgument, requiresArgument, name, aliases);
 	}
 
 	@ Override
-	protected void setOperandPattern( final String operandPattern) {
+	public void setOperandPattern( final String operandPattern) {
 		super.setOperandPattern( operandPattern);
 	}
 
 	@ Override
-	protected Result postProcess( final Result result) {
-		return result;
+	protected GenericResult adapt( final SyntaxResult syntaxResult, final Map< String, ? extends List< String>> operandMap,
+			final Collection< ? extends ParserException> exceptions) {
+		return new GenericResult( syntaxResult, operandMap, exceptions);
 	}
 }

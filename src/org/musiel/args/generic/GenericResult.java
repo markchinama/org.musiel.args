@@ -12,79 +12,38 @@
  */
 package org.musiel.args.generic;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.musiel.args.ParserException;
 import org.musiel.args.Result;
-import org.musiel.args.syntax.Syntax.ParseResult;
+import org.musiel.args.syntax.Syntax.SyntaxResult;
 
-public class GenericResult implements Result {
+public class GenericResult extends GenericAccessor implements Result< GenericResult> {
 
-	private final ParseResult syntaxResult;
-	private final Map< String, ? extends List< String>> operandMap;
+	private final Collection< ? extends ParserException> exceptions;
 
-	public GenericResult( final ParseResult syntaxResult, final Map< String, ? extends List< String>> operandMap) {
-		super();
-		this.syntaxResult = syntaxResult;
-		this.operandMap = operandMap;
+	public GenericResult( final SyntaxResult syntaxResult, final Map< String, ? extends List< String>> operandMap,
+			final Collection< ? extends ParserException> exceptions) {
+		super( syntaxResult, operandMap);
+		this.exceptions = exceptions;
 	}
 
 	@ Override
-	public boolean isOccurred( final String option) {
-		return !this.getNames( option).isEmpty();
+	public Collection< ? extends ParserException> getErrors() {
+		return this.exceptions;
 	}
 
 	@ Override
-	public int getOccurrences( final String option) {
-		return this.getNames( option).size();
+	public GenericResult check() throws ParserException {
+		if( !this.exceptions.isEmpty())
+			throw this.exceptions.iterator().next();
+		return this;
 	}
 
 	@ Override
-	public List< String> getNames( final String option) {
-		return this.syntaxResult.getNames( option);
-	}
-
-	@ Override
-	public String getName( final String option) {
-		return this.getSingle( this.getNames( option));
-	}
-
-	@ Override
-	public List< String> getArguments( final String option) {
-		return this.syntaxResult.getArguments( option);
-	}
-
-	@ Override
-	public String getArgument( final String option) {
-		return this.getSingle( this.syntaxResult.getArguments( option));
-	}
-
-	@ Override
-	public List< String> getOperands() {
-		return this.syntaxResult.getOperands();
-	}
-
-	private List< String> checkAndGetOperands( final String operandName) {
-		if( this.operandMap == null || !this.operandMap.containsKey( operandName))
-			throw new IllegalArgumentException( "unknown operand name: " + operandName);
-		return this.operandMap.get( operandName);
-	}
-
-	@ Override
-	public List< String> getOperands( final String operandName) {
-		return this.checkAndGetOperands( operandName);
-	}
-
-	@ Override
-	public String getOperand( final String operandName) {
-		return this.getSingle( this.checkAndGetOperands( operandName));
-	}
-
-	private < E>E getSingle( final List< E> list) {
-		if( list == null)
-			return null;
-		if( list.size() > 1)
-			throw new IllegalArgumentException( "more than one element found");
-		return list.isEmpty()? null: list.get( 0);
+	public GenericResult getAccessor() {
+		return this;
 	}
 }

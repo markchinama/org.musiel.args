@@ -13,6 +13,7 @@
 package org.musiel.args.generic;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -26,8 +27,9 @@ import org.musiel.args.Parser;
 import org.musiel.args.ParserException;
 import org.musiel.args.Result;
 import org.musiel.args.operand.OperandPattern;
+import org.musiel.args.operand.OperandPatternException;
 import org.musiel.args.syntax.Syntax;
-import org.musiel.args.syntax.Syntax.ParseResult;
+import org.musiel.args.syntax.Syntax.SyntaxResult;
 
 /**
  * An abstract implementation of {@link Parser}.
@@ -36,7 +38,7 @@ import org.musiel.args.syntax.Syntax.ParseResult;
  * 
  * @param <RESULT>
  */
-public abstract class AbstractParser< RESULT> implements Parser< RESULT> {
+public abstract class AbstractParser< RESULT extends Result< ?>> implements Parser< RESULT> {
 
 	private final Syntax syntax;
 
@@ -99,14 +101,14 @@ public abstract class AbstractParser< RESULT> implements Parser< RESULT> {
 	}
 
 	@ Override
-	public RESULT parse( final String[] args, final int offset) throws ParserException {
+	public RESULT parse( final String[] args, final int offset) {
 		if( offset < 0 || offset >= args.length)
 			throw new ArrayIndexOutOfBoundsException( offset);
 		return this.parse( args, offset, args.length - offset);
 	}
 
 	@ Override
-	public RESULT parse( final String[] args, final int offset, final int length) throws ParserException {
+	public RESULT parse( final String[] args, final int offset, final int length) {
 		if( offset < 0 || offset >= args.length)
 			throw new ArrayIndexOutOfBoundsException( offset);
 		if( length < 0)
@@ -117,12 +119,19 @@ public abstract class AbstractParser< RESULT> implements Parser< RESULT> {
 	}
 
 	@ Override
-	public RESULT parse( final String... args) throws ParserException {
-		final ParseResult syntaxResult = this.syntax.parse( Collections.unmodifiableSet( this.options), args);
-		final Map< String, List< String>> operandMap =
-				this.operandPattern == null? null: this.operandPattern.match( syntaxResult.getOperands());
-		return this.postProcess( new GenericResult( syntaxResult, operandMap));
+	public RESULT parse( final String... args) {
+		final SyntaxResult syntaxResult = this.syntax.parse( Collections.unmodifiableSet( this.options), args);
+		final Collection< ParserException> exceptions = new LinkedList< ParserException>( syntaxResult.getErrors());
+		Map< String, List< String>> operandMap = null;
+		try {
+			operandMap = this.operandPattern == null? null: this.operandPattern.match( syntaxResult.getOperands());
+		} catch( final OperandPatternException exception) {
+			exceptions.add( exception);
+		}
+
+		return this.adapt( syntaxResult, operandMap, Collections.unmodifiableCollection( exceptions));
 	}
 
-	protected abstract RESULT postProcess( Result result) throws ParserException;
+	protected abstract RESULT adapt( SyntaxResult syntaxResult, Map< String, ? extends List< String>> operandMap,
+			Collection< ? extends ParserException> exceptions);
 }

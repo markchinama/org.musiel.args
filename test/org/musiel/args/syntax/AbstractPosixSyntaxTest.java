@@ -12,6 +12,7 @@
  */
 package org.musiel.args.syntax;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -22,8 +23,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.musiel.args.Option;
-import org.musiel.args.ParserException;
-import org.musiel.args.syntax.Syntax.ParseResult;
+import org.musiel.args.syntax.Syntax.SyntaxResult;
 import org.musiel.args.syntax.SyntaxException.Reason;
 
 public abstract class AbstractPosixSyntaxTest {
@@ -155,56 +155,65 @@ public abstract class AbstractPosixSyntaxTest {
 		this.options.add( this.optionO);
 	}
 
-	protected void testExceptionalParse( final Class< ? extends Throwable> exceptionType, final String message,
-			final Set< Option> options, final String... args) throws ParserException {
-		this.exceptions.expect( exceptionType);
-		this.exceptions.expectMessage( message);
-		this.syntax.parse( options, args);
+	protected void verifyException( final Collection< ? extends SyntaxException> errors, final String message) {
+		for( final SyntaxException exception: errors)
+			if( exception.getMessage().contains( message))
+				return;
+		Assert.fail();
 	}
 
-	protected void testExceptionalParse( final Reason reason, final Set< Option> options, final String... args) throws ParserException {
+	protected void verifyException( final Collection< ? extends SyntaxException> errors, final Reason reason) {
+		for( final SyntaxException exception: errors)
+			if( reason.equals( exception.getReason()))
+				return;
+		Assert.fail();
+	}
+
+	@ Test
+	public void testParsingUnsupportedOption() {
+		final Set< Option> options = new HashSet<>( this.options);
+		Assert.assertTrue( this.syntax.parse( options).getErrors().isEmpty());
+		options.add( this.option( "-?"));
 		try {
-			this.syntax.parse( options, args);
+			this.syntax.parse( options);
 			Assert.fail();
-		} catch( final SyntaxException exception) {
-			Assert.assertEquals( reason, exception.getReason());
+		} catch( final IllegalArgumentException exception) {
+			Assert.assertTrue( exception.getMessage().contains( "not a valid"));
 		}
 	}
 
 	@ Test
-	public void testParsingUnsupportedOption() throws ParserException {
+	public void testParsingDuplicateNames() {
 		final Set< Option> options = new HashSet<>( this.options);
-		this.syntax.parse( options);
-		options.add( this.option( "-?"));
-		this.testExceptionalParse( IllegalArgumentException.class, "not a valid", options);
-	}
-
-	@ Test
-	public void testParsingDuplicateNames() throws ParserException {
-		final Set< Option> options = new HashSet<>( this.options);
-		this.syntax.parse( options);
+		Assert.assertTrue( this.syntax.parse( options).getErrors().isEmpty());
 		options.add( this.option( "-x", "-a"));
-		this.testExceptionalParse( IllegalArgumentException.class, "duplicate option name", options);
+		try {
+			this.syntax.parse( options);
+			Assert.fail();
+		} catch( final IllegalArgumentException exception) {
+			Assert.assertTrue( exception.getMessage().contains( "duplicate name"));
+		}
 	}
 
 	@ Test
-	public void testMissingArgument() throws ParserException {
-		this.testExceptionalParse( Reason.ARGUMENT_REQUIRED, this.options, "-o");
+	public void testMissingArgument() {
+		this.verifyException( this.syntax.parse( this.options, "-o").getErrors(), Reason.ARGUMENT_REQUIRED);
 	}
 
 	@ Test
-	public void testMissingArgument2() throws ParserException {
-		this.testExceptionalParse( Reason.ARGUMENT_REQUIRED, this.options, "-oa");
+	public void testMissingArgument2() {
+		this.verifyException( this.syntax.parse( this.options, "-oa").getErrors(), Reason.ARGUMENT_REQUIRED);
 	}
 
 	@ Test
-	public void testUnknownOption() throws ParserException {
-		this.testExceptionalParse( Reason.UNKNOWN_OPTION, this.options, "-x");
+	public void testUnknownOption() {
+		this.verifyException( this.syntax.parse( this.options, "-x").getErrors(), Reason.UNKNOWN_OPTION);
 	}
 
 	@ Test
-	public void testParse() throws ParserException {
-		final ParseResult result = this.syntax.parse( this.options, "-a", "-o", "file1", "-o", "-", "-", "xyz", "--", "-a", "-a");
+	public void testParse() {
+		final SyntaxResult result = this.syntax.parse( this.options, "-a", "-o", "file1", "-o", "-", "-", "xyz", "--", "-a", "-a");
+		Assert.assertTrue( result.getErrors().isEmpty());
 		Assert.assertFalse( result.getNames( "-a").isEmpty());
 		Assert.assertTrue( result.getNames( "-b").isEmpty());
 		Assert.assertFalse( result.getNames( "-o").isEmpty());
@@ -216,9 +225,10 @@ public abstract class AbstractPosixSyntaxTest {
 	}
 
 	@ Test
-	public void testParseJoint() throws ParserException {
+	public void testParseJoint() {
 		this.syntax.setJointArgumentsAllowed( true);
-		final ParseResult result = this.syntax.parse( this.options, "-a", "-o", "file1", "-ooutput2", "-", "xyz", "--", "-a", "-a");
+		final SyntaxResult result = this.syntax.parse( this.options, "-a", "-o", "file1", "-ooutput2", "-", "xyz", "--", "-a", "-a");
+		Assert.assertTrue( result.getErrors().isEmpty());
 		Assert.assertFalse( result.getNames( "-a").isEmpty());
 		Assert.assertTrue( result.getNames( "-b").isEmpty());
 		Assert.assertFalse( result.getNames( "-o").isEmpty());
@@ -230,13 +240,14 @@ public abstract class AbstractPosixSyntaxTest {
 	}
 
 	@ Test
-	public void parseOptional() throws ParserException {
+	public void parseOptional() {
 		final Set< Option> options = new HashSet<>( this.options);
 		options.add( this.option( false, true, true, false, "-p"));
 		this.syntax.setOptionalArgumentsAllowed( true);
 		this.syntax.setLateOptionsAllowed( true);
-		final ParseResult result =
+		final SyntaxResult result =
 				this.syntax.parse( options, "-a", "-abpp1", "-o", "file1", "-p", "-", "xyz", "-pprofile1", "-o-", "--", "-a", "-a");
+		Assert.assertTrue( result.getErrors().isEmpty());
 		Assert.assertFalse( result.getNames( "-a").isEmpty());
 		Assert.assertFalse( result.getNames( "-b").isEmpty());
 		Assert.assertFalse( result.getNames( "-o").isEmpty());

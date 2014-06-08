@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import org.musiel.args.Result;
+import org.musiel.args.DefaultAccessor;
 import org.musiel.args.operand.OperandPattern;
 import org.musiel.args.reflect.Argument.ArgumentStrategy;
 
@@ -46,7 +46,7 @@ abstract class MethodHandler {
 	}
 
 	protected final Method method;
-	protected final PostProcessor postProcessor;
+	protected final ReturnValueConstructor valueConstructor;
 	protected final Expectation expectation;
 
 	public Method getMethod() {
@@ -55,15 +55,15 @@ abstract class MethodHandler {
 
 	protected MethodHandler( final Method method) {
 		this.method = method;
-		this.postProcessor = new PostProcessor( this.method.getReturnType());
-		this.expectation = this.postProcessor.expectation;
+		this.valueConstructor = new ReturnValueConstructor( this.method.getReturnType());
+		this.expectation = this.valueConstructor.expectation;
 	}
 
-	public Object decode( final Result result) throws DecoderException {
-		return this.postProcessor.decode( this.findData( result));
+	public Object decode( final DefaultAccessor result) throws DecoderException {
+		return this.valueConstructor.decode( this.findData( result));
 	}
 
-	protected abstract List< String> findData( Result result);
+	protected abstract List< String> findData( DefaultAccessor result);
 }
 
 class OptionHandler extends MethodHandler {
@@ -140,7 +140,7 @@ class OptionHandler extends MethodHandler {
 	}
 
 	@ Override
-	protected List< String> findData( final Result result) {
+	protected List< String> findData( final DefaultAccessor result) {
 		return result.getArguments( this.name);
 	}
 }
@@ -172,7 +172,7 @@ class OperandHandler extends AbstractOperandHandler {
 	}
 
 	@ Override
-	protected List< String> findData( final Result result) {
+	protected List< String> findData( final DefaultAccessor result) {
 		return result.getOperands( this.name);
 	}
 }
@@ -184,7 +184,7 @@ class OperandsHandler extends AbstractOperandHandler {
 	}
 
 	@ Override
-	protected List< String> findData( final Result result) {
+	protected List< String> findData( final DefaultAccessor result) {
 		return result.getOperands();
 	}
 }

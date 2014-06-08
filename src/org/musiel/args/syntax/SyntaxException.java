@@ -70,6 +70,14 @@ public class SyntaxException extends ParserException {
 			}
 		},
 
+		MISSING_OPTION {
+
+			@ Override
+			protected String composeMessage( final String optionName, final Collection< String> additionalOptionNames) {
+				return "option " + optionName + " missing";
+			}
+		},
+
 		;
 
 		protected abstract String composeMessage( String optionName, Collection< String> additionalOptionNames);

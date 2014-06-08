@@ -16,6 +16,7 @@ import java.io.File;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.musiel.args.DefaultAccessor;
 import org.musiel.args.ParserException;
 import org.musiel.args.Result;
 import org.musiel.args.generic.AbstractParser;
@@ -60,8 +61,8 @@ public class ReflectParserTest extends AbstractParserTest {
 	}
 
 	@ Override
-	protected AbstractParser< Result> newParser() {
-		return new ReflectParser<>( Result.class);
+	protected AbstractParser< ? extends Result< ? extends DefaultAccessor>> newParser() {
+		return new ReflectParser<>( DefaultAccessor.class);
 	}
 
 	@ OperandPattern( "[INPUT... OUTPUT]")
@@ -89,7 +90,8 @@ public class ReflectParserTest extends AbstractParserTest {
 
 	@ Test
 	public void test() throws ParserException {
-		final Options options = ReflectParser.parse( Options.class, "--help", "input", "output", "--index", "3", "--index", "9");
+		final Options options =
+				ReflectParser.parse( Options.class, "--help", "input", "output", "--index", "3", "--index", "9").getAccessor();
 		Assert.assertTrue( options.help());
 		Assert.assertArrayEquals( new File[]{ new File( "input")}, options.inputFiles());
 		Assert.assertEquals( new File( "output"), options.outputFile());

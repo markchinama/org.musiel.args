@@ -19,9 +19,9 @@ import java.util.List;
  * 
  * @author Bagana
  * 
- * @param <RESULT>
+ * @param <RESULT_ACCESSOR>
  */
-public interface Parser< RESULT> {
+public interface Parser< RESULT extends Result< ?>> {
 
 	public List< ? extends Option> getOptions();
 
@@ -31,9 +31,9 @@ public interface Parser< RESULT> {
 
 	public String getOperandPattern();
 
-	public RESULT parse( final String... args) throws ParserException;
+	public RESULT parse( final String... args);
 
-	public RESULT parse( final String[] args, final int offset) throws ParserException;
+	public RESULT parse( final String[] args, final int offset);
 
-	public RESULT parse( final String[] args, final int offset, final int length) throws ParserException;
+	public RESULT parse( final String[] args, final int offset, final int length);
 }

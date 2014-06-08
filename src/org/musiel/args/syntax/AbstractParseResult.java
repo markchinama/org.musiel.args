@@ -12,43 +12,129 @@
  */
 package org.musiel.args.syntax;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.musiel.args.Option;
-import org.musiel.args.syntax.Syntax.ParseResult;
+import org.musiel.args.syntax.Syntax.SyntaxResult;
+import org.musiel.args.syntax.SyntaxException.Reason;
 
-public abstract class AbstractParseResult implements ParseResult {
+public abstract class AbstractParseResult implements SyntaxResult {
 
+	private final Set< Option> options;
 	protected final Map< String, Option> optionDictionary = new TreeMap<>();
+	protected List< String> operands = new LinkedList<>();
 
-	protected final Map< Option, List< String>> optionNames = new HashMap<>();
-	protected final Map< Option, List< String>> optionArguments = new HashMap<>();
-	protected final List< String> operands = new LinkedList<>();
+	protected AbstractParseResult( final Set< Option> options) {
+		this.options = options;
+		for( final Option option: this.options)
+			for( final String name: option.getNames())
+				if( this.optionDictionary.containsKey( name))
+					throw new IllegalArgumentException( "duplicate name: " + name);
+				else
+					this.optionDictionary.put( name, option);
+	}
 
-	private Option getOption( final String optionName) {
+	private final Map< String, List< String>> optionNames = new TreeMap<>();
+	private final Map< String, List< String>> optionArguments = new TreeMap<>();
+
+	private String getCanonicalName( final String optionName) {
 		final Option option = this.optionDictionary.get( optionName);
-		if( option == null)
-			throw new IllegalArgumentException( "option \"" + optionName + "\" does not exist");
-		return option;
+		return option != null? option.getName(): optionName;
+	}
+
+	private List< String> getNamesInternal( final String optionName) {
+		String canonicalName = this.getCanonicalName( optionName);
+		List< String> list = this.optionNames.get( canonicalName);
+		if( list == null)
+			this.optionNames.put( canonicalName, list = new LinkedList<>());
+		return list;
+	}
+
+	private List< String> getArgumentsInternal( final String optionName) {
+		String canonicalName = this.getCanonicalName( optionName);
+		List< String> list = this.optionArguments.get( canonicalName);
+		if( list == null)
+			this.optionArguments.put( canonicalName, list = new LinkedList<>());
+		return list;
+	}
+
+	protected void push( String optionName, String optionArgument) {
+		this.getNamesInternal( optionName).add( optionName);
+		this.getArgumentsInternal( optionName).add( optionArgument);
 	}
 
 	@ Override
-	public List< String> getNames( final String option) {
-		return Collections.unmodifiableList( this.optionNames.get( this.getOption( option)));
+	public List< String> getNames( final String optionName) {
+		return Collections.unmodifiableList( this.getNamesInternal( optionName));
 	}
 
 	@ Override
-	public List< String> getArguments( final String option) {
-		return Collections.unmodifiableList( this.optionArguments.get( this.getOption( option)));
+	public List< String> getArguments( final String optionName) {
+		return Collections.unmodifiableList( this.getArgumentsInternal( optionName));
 	}
 
 	@ Override
 	public List< String> getOperands() {
 		return Collections.unmodifiableList( this.operands);
+	}
+
+	protected void build() {
+		for( final Option option: this.options) {
+			final List< String> names = this.getNamesInternal( option.getName());
+			final List< String> arguments = this.getArgumentsInternal( option.getName());
+
+			if( option.isRequired() && ( names == null || names.isEmpty()))
+				this.errors.add( new SyntaxException( Reason.MISSING_OPTION, option.getName()));
+
+			if( !option.isRepeatable() && names != null && names.size() > 1)
+				this.errors.add( new SyntaxException( Reason.TOO_MANY_OCCURRENCES, names.get( 1), names));
+
+			if( !option.isArgumentAccepted()) {
+				final Iterator< String> nameIterator = names.iterator();
+				final Iterator< String> argumentIterator = arguments.iterator();
+				while( nameIterator.hasNext()) {
+					final String name = nameIterator.next();
+					final String argument = argumentIterator.next();
+					if( argument != null)
+						this.errors.add( new SyntaxException( Reason.UNEXPECTED_ARGUMENT, name));
+				}
+			}
+
+			if( option.isArgumentRequired()) {
+				final Iterator< String> nameIterator = names.iterator();
+				final Iterator< String> argumentIterator = arguments.iterator();
+				while( nameIterator.hasNext()) {
+					final String name = nameIterator.next();
+					final String argument = argumentIterator.next();
+					if( argument == null)
+						this.errors.add( new SyntaxException( Reason.ARGUMENT_REQUIRED, name));
+				}
+			}
+		}
+
+		this.toArrayLists( this.optionNames);
+		this.toArrayLists( this.optionArguments);
+		this.operands = new ArrayList<>( this.operands);
+	}
+
+	private void toArrayLists( final Map< String, List< String>> map) {
+		for( final Entry< String, List< String>> entry: map.entrySet())
+			entry.setValue( new ArrayList<>( entry.getValue()));
+	}
+
+	protected final LinkedList< SyntaxException> errors = new LinkedList<>();
+
+	@ Override
+	public Collection< ? extends SyntaxException> getErrors() {
+		return Collections.unmodifiableCollection( this.errors);
 	}
 }

@@ -10,15 +10,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args;
+package org.musiel.args.reflect;
 
-import java.util.Collection;
+public class UncheckedParserException extends RuntimeException {
 
-public interface Result< ACCESSOR> {
+	private static final long serialVersionUID = 7779464954738117529L;
 
-	public Collection< ? extends ParserException> getErrors();
-
-	public Result< ACCESSOR> check() throws ParserException;
-
-	public ACCESSOR getAccessor();
+	public UncheckedParserException( final Throwable cause) {
+		super( cause);
+	}
 }

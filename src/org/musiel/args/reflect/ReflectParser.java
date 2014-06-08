@@ -13,21 +13,28 @@
 package org.musiel.args.reflect;
 
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import org.musiel.args.DefaultAccessor;
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
 import org.musiel.args.Result;
 import org.musiel.args.generic.AbstractParser;
+import org.musiel.args.generic.GenericAccessor;
 import org.musiel.args.syntax.GnuSyntax;
 import org.musiel.args.syntax.Syntax;
+import org.musiel.args.syntax.Syntax.SyntaxResult;
 
-public class ReflectParser< RESULT> extends AbstractParser< RESULT> {
+public class ReflectParser< MODEL> extends AbstractParser< Result< MODEL>> {
 
 	@ Override
 	public Option newOption( final String name, final String... aliases) {
@@ -40,14 +47,14 @@ public class ReflectParser< RESULT> extends AbstractParser< RESULT> {
 		return super.newOption( required, repeatable, acceptsArgument, requiresArgument, name, aliases);
 	}
 
-	public ReflectParser( final Class< RESULT> resultType) {
+	public ReflectParser( final Class< MODEL> resultType) {
 		this( new GnuSyntax(), resultType);
 	}
 
-	private final Class< RESULT> resultType;
-	private final Set< MethodHandler> methodHandlers = new HashSet<>();
+	private final Class< MODEL> resultType;
+	private final Map< Method, MethodHandler> methodHandlers = new HashMap<>();
 
-	public ReflectParser( final Syntax syntax, final Class< RESULT> resultType) {
+	public ReflectParser( final Syntax syntax, final Class< MODEL> resultType) {
 		super( syntax);
 
 		if( !resultType.isInterface())
@@ -58,36 +65,70 @@ public class ReflectParser< RESULT> extends AbstractParser< RESULT> {
 			this.setOperandPattern( resultType.getAnnotation( OperandPattern.class).value());
 
 		for( final Method method: resultType.getMethods())
-			if( !Result.class.equals( method.getDeclaringClass()))
-				this.methodHandlers.add( MethodHandler.forMethod( method, this, this.getOperandPatternMatcher()));
+			if( !DefaultAccessor.class.equals( method.getDeclaringClass()))
+				this.methodHandlers.put( method, MethodHandler.forMethod( method, this, this.getOperandPatternMatcher()));
 	}
 
 	@ Override
-	protected RESULT postProcess( final Result result) throws ParserException {
-		final Map< Method, Object> returnValues = new HashMap<>();
-		for( final MethodHandler handler: this.methodHandlers)
-			returnValues.put( handler.getMethod(), handler.decode( result));
+	protected Result< MODEL> adapt( final SyntaxResult syntaxResult, final Map< String, ? extends List< String>> operandMap,
+			final Collection< ? extends ParserException> exceptions) {
+		final GenericAccessor basicAccessor = new GenericAccessor( syntaxResult, operandMap);
 
-		return this.resultType.cast( Proxy.newProxyInstance( this.resultType.getClassLoader(), new Class< ?>[]{ this.resultType},
-				new InvocationHandler() {
+		final Set< Method> decoded = new HashSet<>();
+		final Map< Method, Object> decodedValues = new HashMap<>();
+		final MODEL accessor =
+				this.resultType.cast( Proxy.newProxyInstance( this.resultType.getClassLoader(), new Class< ?>[]{ this.resultType},
+						new InvocationHandler() {
 
-					@ Override
-					public Object invoke( final Object proxy, final Method method, final Object[] args) throws Throwable {
-						if( Result.class.equals( method.getDeclaringClass()))
-							return method.invoke( result, args);
-						if( returnValues.containsKey( method))
-							return returnValues.get( method);
-						throw new AssertionError( "you found a bug");
+							@ Override
+							public Object invoke( final Object proxy, final Method method, final Object[] args) throws IllegalAccessException,
+									InvocationTargetException {
+								if( DefaultAccessor.class.equals( method.getDeclaringClass()))
+									return method.invoke( basicAccessor, args);
+								if( decoded.contains( method))
+									return decodedValues.get( method);
+								try {
+									final Object decodedValue = ReflectParser.this.methodHandlers.get( method).decode( basicAccessor);
+									decoded.add( method);
+									decodedValues.put( method, decodedValue);
+									return decodedValue;
+								} catch( final DecoderException exception) {
+									throw new UncheckedParserException( exception);
+								}
+							}
+						}));
+
+		return new Result< MODEL>() {
+
+			@ Override
+			public Collection< ? extends ParserException> getErrors() {
+				return exceptions;
+			}
+
+			@ Override
+			public Result< MODEL> check() throws ParserException {
+				if( !exceptions.isEmpty())
+					throw exceptions.iterator().next();
+				for( final Entry< Method, MethodHandler> handler: ReflectParser.this.methodHandlers.entrySet())
+					if( !decoded.contains( handler.getKey())) {
+						decoded.add( handler.getKey());
+						decodedValues.put( handler.getKey(), handler.getValue().decode( basicAccessor));
 					}
-				}));
+				return this;
+			}
+
+			@ Override
+			public MODEL getAccessor() {
+				return accessor;
+			}
+		};
 	}
 
-	public static < RESULT>RESULT parse( final Syntax syntax, final Class< RESULT> resultType, final String... args)
-			throws ParserException {
-		return new ReflectParser< RESULT>( syntax, resultType).parse( args);
+	public static < MODEL>Result< MODEL> parse( final Syntax syntax, final Class< MODEL> resultType, final String... args) {
+		return new ReflectParser< MODEL>( syntax, resultType).parse( args);
 	}
 
-	public static < RESULT>RESULT parse( final Class< RESULT> resultType, final String... args) throws ParserException {
-		return new ReflectParser< RESULT>( resultType).parse( args);
+	public static < MODEL>Result< MODEL> parse( final Class< MODEL> resultType, final String... args) {
+		return new ReflectParser< MODEL>( resultType).parse( args);
 	}
 }

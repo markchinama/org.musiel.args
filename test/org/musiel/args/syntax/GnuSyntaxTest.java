@@ -18,8 +18,7 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 import org.musiel.args.Option;
-import org.musiel.args.ParserException;
-import org.musiel.args.syntax.Syntax.ParseResult;
+import org.musiel.args.syntax.Syntax.SyntaxResult;
 import org.musiel.args.syntax.SyntaxException.Reason;
 
 public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
@@ -49,70 +48,75 @@ public class GnuSyntaxTest extends AbstractPosixSyntaxTest {
 	}
 
 	@ Test
-	public void testDefaultLateOptionAllowed() throws ParserException {
-		this.syntax.parse( this.options, "-a", "file1", "-a");
+	public void testDefaultLateOptionAllowed() {
+		Assert.assertTrue( this.syntax.parse( this.options, "-a", "file1", "-a").getErrors().isEmpty());
 	}
 
 	@ Test
-	public void testLateOptionDisabled() throws ParserException {
+	public void testLateOptionDisabled() {
 		this.syntax.setLateOptionsAllowed( false);
-		this.testExceptionalParse( Reason.LATE_OPTION, this.options, "-a", "file1", "-a");
+		this.verifyException( this.syntax.parse( this.options, "-a", "file1", "-a").getErrors(), Reason.LATE_OPTION);
 	}
 
 	@ Test
-	public void testUnknownLongName() throws ParserException {
+	public void testUnknownLongName() {
 		final Set< Option> options = new HashSet<>( this.options);
 		options.add( this.option( false, true, true, true, "--ignore", "-I"));
 		options.add( this.option( false, true, true, true, "--ignore-file", "-F"));
-		this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file");
-		this.testExceptionalParse( Reason.UNKNOWN_OPTION, options, "--ignored", "ignored", "--ignor=ignored-file");
+		Assert.assertTrue( this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file").getErrors().isEmpty());
+		this.verifyException( this.syntax.parse( options, "--ignored", "ignored", "--ignor=ignored-file").getErrors(),
+				Reason.UNKNOWN_OPTION);
 	}
 
 	@ Test
-	public void testUnknownLongName2() throws ParserException {
+	public void testUnknownLongName2() {
 		final Set< Option> options = new HashSet<>( this.options);
 		options.add( this.option( false, true, true, true, "--ignore", "-I"));
 		options.add( this.option( false, true, true, true, "--ignore-file", "-F"));
-		this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file");
-		this.testExceptionalParse( Reason.UNKNOWN_OPTION, options, "--ignore", "ignored", "--ignor?=ignored-file");
+		Assert.assertTrue( this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file").getErrors().isEmpty());
+		this.verifyException( this.syntax.parse( options, "--ignore", "ignored", "--ignor?=ignored-file").getErrors(),
+				Reason.UNKNOWN_OPTION);
 	}
 
 	@ Test
-	public void testAbbreviationDisabled() throws ParserException {
+	public void testAbbreviationDisabled() {
 		final Set< Option> options = new HashSet<>( this.options);
 		options.add( this.option( false, true, true, true, "--ignore", "-I"));
-		this.syntax.parse( options, "--ign", "ignored");
+		Assert.assertTrue( this.syntax.parse( options, "--ign", "ignored").getErrors().isEmpty());
 		( ( GnuSyntax) this.syntax).setAbbreviationAllowed( false);
-		this.testExceptionalParse( Reason.UNKNOWN_OPTION, options, "--ign", "ignored");
+		this.verifyException( this.syntax.parse( options, "--ign", "ignored").getErrors(), Reason.UNKNOWN_OPTION);
 	}
 
 	@ Test
-	public void testAmbiguous() throws ParserException {
+	public void testAmbiguous() {
 		final Set< Option> options = new HashSet<>( this.options);
 		options.add( this.option( false, true, true, true, "--ignore", "-I"));
 		options.add( this.option( false, true, true, true, "--ignore-file", "-F"));
 
-		ParseResult result = this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file");
+		SyntaxResult result = this.syntax.parse( options, "--ignore", "ignored", "--ignore-file=ignored-file");
+		Assert.assertTrue( result.getErrors().isEmpty());
 		Assert.assertArrayEquals( new String[]{ "ignored"}, result.getArguments( "-I").toArray());
 		Assert.assertArrayEquals( new String[]{ "ignored-file"}, result.getArguments( "-F").toArray());
 
 		result = this.syntax.parse( options, "--ignore", "ignored", "--ignore-=ignored-file");
+		Assert.assertTrue( result.getErrors().isEmpty());
 		Assert.assertArrayEquals( new String[]{ "ignored"}, result.getArguments( "-I").toArray());
 		Assert.assertArrayEquals( new String[]{ "ignored-file"}, result.getArguments( "-F").toArray());
 		Assert.assertArrayEquals( new String[]{ "--ignore-file"}, result.getNames( "-F").toArray());
 
-		this.testExceptionalParse( Reason.AMBIGUOUS, options, "--ignore", "ignored", "--ignor=ignored-file");
+		this.verifyException( this.syntax.parse( options, "--ignore", "ignored", "--ignor=ignored-file").getErrors(), Reason.AMBIGUOUS);
 	}
 
 	@ Test
-	public void testParseOptionalGnu() throws ParserException {
+	public void testParseOptionalGnu() {
 		final Set< Option> options = new HashSet<>( this.options);
 		options.add( this.option( false, true, true, false, "--profile", "-p"));
 		options.add( this.option( false, true, true, true, "--ignore", "-I"));
 		this.syntax.setOptionalArgumentsAllowed( true);
-		final ParseResult result =
+		final SyntaxResult result =
 				this.syntax.parse( options, "-a", "-abpp1", "-o", "file1", "-p", "--profile", "--ignore", "ignored", "--ign=ignored2", "-",
 						"xyz", "--profile=profile1", "-o-", "--", "-a", "-a");
+		Assert.assertTrue( result.getErrors().isEmpty());
 		Assert.assertFalse( result.getNames( "-a").isEmpty());
 		Assert.assertFalse( result.getNames( "-b").isEmpty());
 		Assert.assertFalse( result.getNames( "-o").isEmpty());

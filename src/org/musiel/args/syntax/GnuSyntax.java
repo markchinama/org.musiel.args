@@ -13,7 +13,7 @@
 package org.musiel.args.syntax;
 
 import java.util.Set;
-import java.util.regex.Matcher;
+import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.musiel.args.Option;
@@ -99,8 +99,6 @@ public class GnuSyntax extends PosixSyntax {
 		return new GnuMachine( options);
 	}
 
-	private static final Pattern LONG_OPTION_PATTERN = Pattern.compile( "^(\\-\\-[A-Za-z0-9\\-]+)(?:\\=(.*))?$");
-
 	protected class GnuMachine extends PosixMachine {
 
 		public GnuMachine( final Set< Option> options) {
@@ -108,46 +106,47 @@ public class GnuSyntax extends PosixSyntax {
 		}
 
 		@ Override
-		protected void handleOptionArg( final String arg) throws SyntaxException {
+		protected void handleOption( final String arg) {
 			if( arg.startsWith( "--"))
-				this.handleLongOptionArg( arg);
+				this.handleLongOption( arg);
 			else
-				this.handleShortOptionArg( arg);
+				this.handleShortOption( arg);
 		}
 
-		private void handleLongOptionArg( final String arg) throws SyntaxException {
-			final Matcher matcher = GnuSyntax.LONG_OPTION_PATTERN.matcher( arg);
-			if( !matcher.find())
-				throw new SyntaxException( Reason.UNKNOWN_OPTION, arg);
-			String name = matcher.group( 1);
+		private void handleLongOption( final String arg) {
+			final int equalPos = arg.indexOf( '=');
+			String name = equalPos < 0? arg: arg.substring( 0, equalPos); // "" is possible, but i'm gonna ignore it
+			final String argument = equalPos < 0? null: arg.substring( equalPos + 1);
 			Option option = this.optionDictionary.get( name);
-			if( option == null && GnuSyntax.this.isAbbreviationAllowed())
-				option = this.optionDictionary.get( name = this.findAbbreviatedName( name));
-			if( option == null)
-				throw new SyntaxException( Reason.UNKNOWN_OPTION, name);
 
-			final String argument = matcher.group( 2);
-			if( argument != null)
-				this.push( option, name, argument);
-			else if( !option.isArgumentRequired())
-				this.push( option, name);
+			if( option == null)
+				if( GnuSyntax.this.isAbbreviationAllowed())
+					option = this.optionDictionary.get( name = this.findAbbreviatedName( name));
+				else
+					this.errors.add( new SyntaxException( Reason.UNKNOWN_OPTION, name));
+
+			if( argument != null || option != null && !option.isArgumentRequired())
+				this.push( name, argument);
 			else {
-				this.openOption = option;
 				this.openOptionName = name;
+				this.openOption = option;
 			}
 		}
 
-		private String findAbbreviatedName( final String name) throws SyntaxException {
-			String candidate = null;
+		private String findAbbreviatedName( final String name) {
+			final Set< String> candidates = new TreeSet<>();
 			for( final String namePossible: this.optionDictionary.keySet())
 				if( namePossible.startsWith( name))
-					if( candidate == null)
-						candidate = namePossible;
-					else
-						throw new SyntaxException( Reason.AMBIGUOUS, name);
-			if( candidate == null)
-				throw new SyntaxException( Reason.UNKNOWN_OPTION, name);
-			return candidate;
+					candidates.add( namePossible);
+			if( candidates.isEmpty()) {
+				this.errors.add( new SyntaxException( Reason.UNKNOWN_OPTION, name));
+				return name;
+			}
+			if( candidates.size() > 1) {
+				this.errors.add( new SyntaxException( Reason.AMBIGUOUS, name));
+				return name;
+			}
+			return candidates.iterator().next();
 		}
 	}
 }

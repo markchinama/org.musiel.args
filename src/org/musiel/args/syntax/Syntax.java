@@ -12,6 +12,7 @@
  */
 package org.musiel.args.syntax;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -48,7 +49,7 @@ public interface Syntax {
 	 * @return
 	 * @throws ParserException
 	 */
-	public ParseResult parse( Set< Option> options, String... args) throws ParserException;
+	public SyntaxResult parse( Set< Option> options, String... args);
 
 	/**
 	 * The result of a parsing process.
@@ -58,17 +59,31 @@ public interface Syntax {
 	 * for a particular alias, one has to filter by his/herself according to {@link #getNames(Option)}.
 	 * </p>
 	 * 
-	 * <p>
-	 * This interface is intended to be implemented only by this library. A new version with additional methods WILL NOT be considered a
-	 * backward incompatible version. (If it is implemented in your code, a stated backward compatible upgrade might break your compile.)
-	 * </p>
-	 * 
 	 * @author Bagana
 	 */
-	public static interface ParseResult {
+	public static interface SyntaxResult {
+
+		/**
+		 * Returns the errors encountered during the parsing process.
+		 * 
+		 * @return
+		 */
+		public Collection< ? extends SyntaxException> getErrors();
 
 		/**
 		 * Returns the option names used for an option, in the order they occurred.
+		 * 
+		 * <p>
+		 * Note that it may not comply the requirements of corresponding {@link Option}'s, for example, it may be an empty list for a
+		 * required option, or a list with multiple elements for a non-repeatable option, in which cases there must be at least one error in
+		 * {@link #getErrors()}. If {@link #getErrors()} returns an empty collection, this result is guaranteed to be compliant with the
+		 * requirements.
+		 * </p>
+		 * 
+		 * <p>
+		 * Options NOT defined in the option set are also possible to be retrieved, in which case at least one error should have been added
+		 * into {@link #getErrors()}.
+		 * </p>
 		 * 
 		 * @param option
 		 * @return
@@ -77,6 +92,18 @@ public interface Syntax {
 
 		/**
 		 * Returns the option-arguments of an option, in the order they occurred. Occurrences without arguments produce <code>null</code>s.
+		 * 
+		 * <p>
+		 * Note that it may not comply the requirements of corresponding {@link Option}'s, for example, it may be an empty list for a
+		 * required option, or a list with multiple elements for a non-repeatable option, in which cases there must be at least one error in
+		 * {@link #getErrors()}. If {@link #getErrors()} returns an empty collection, this result is guaranteed to be compliant with the
+		 * requirements.
+		 * </p>
+		 * 
+		 * <p>
+		 * Options NOT defined in the option set are also possible to be retrieved, in which case at least one error should have been added
+		 * into {@link #getErrors()}.
+		 * </p>
 		 * 
 		 * @param option
 		 * @return

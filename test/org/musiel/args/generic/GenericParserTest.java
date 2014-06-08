@@ -12,12 +12,13 @@
  */
 package org.musiel.args.generic;
 
+import org.musiel.args.DefaultAccessor;
 import org.musiel.args.Result;
 
 public class GenericParserTest extends AbstractParserTest {
 
 	@ Override
-	protected AbstractParser< Result> newParser() {
+	protected AbstractParser< ? extends Result< ? extends DefaultAccessor>> newParser() {
 		return new GenericParser();
 	}
 }

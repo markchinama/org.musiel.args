@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.musiel.args.DefaultAccessor;
 import org.musiel.args.ParserException;
 import org.musiel.args.Result;
 
@@ -25,7 +26,7 @@ public abstract class AbstractParserTest {
 	@ Rule
 	public final ExpectedException exceptions = ExpectedException.none();
 
-	private AbstractParser< Result> parser;
+	private AbstractParser< ? extends Result< ? extends DefaultAccessor>> parser;
 
 	@ Before
 	public void setup() {
@@ -33,7 +34,7 @@ public abstract class AbstractParserTest {
 		this.parser.newOption( "-a", "--all");
 	}
 
-	protected abstract AbstractParser< Result> newParser();
+	protected abstract AbstractParser< ? extends Result< ? extends DefaultAccessor>> newParser();
 
 	@ Test
 	public void options() {
@@ -73,9 +74,9 @@ public abstract class AbstractParserTest {
 
 	@ Test
 	public void normalPath() throws ParserException {
-		Result result = this.parser.parse( new String[]{ "-!!==", "-a", "file1"}, 1);
+		DefaultAccessor result = this.parser.parse( new String[]{ "-!!==", "-a", "file1"}, 1).getAccessor();
 		Assert.assertArrayEquals( new String[]{ "file1"}, result.getOperands().toArray());
-		result = this.parser.parse( new String[]{ "-!!==", "-a", "file1", "wontsee", null}, 1, 2);
+		result = this.parser.parse( new String[]{ "-!!==", "-a", "file1", "wontsee", null}, 1, 2).getAccessor();
 		Assert.assertArrayEquals( new String[]{ "file1"}, result.getOperands().toArray());
 	}
 }

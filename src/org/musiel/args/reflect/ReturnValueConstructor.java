@@ -27,7 +27,7 @@ import java.util.Map;
 
 import org.musiel.args.reflect.Argument.ArgumentStrategy;
 
-class PostProcessor {
+class ReturnValueConstructor {
 
 	public final Category category;
 	private final Class< ?> type;
@@ -35,7 +35,7 @@ class PostProcessor {
 
 	public final Expectation expectation;
 
-	public PostProcessor( final Class< ?> type) {
+	public ReturnValueConstructor( final Class< ?> type) {
 		this.category = //
 				void.class.equals( type)? Category.MANDATORY_FLAG: //
 						boolean.class.equals( type)? Category.FLAG: //
@@ -44,7 +44,7 @@ class PostProcessor {
 												type.getComponentType().isPrimitive()? Category.PRIMITIVE_ARRAY: //
 														Category.OBJECT_ARRAY;
 		this.type = type.isArray()? type.getComponentType(): type;
-		this.decoder = PostProcessor.DECODERS.get( this.type);
+		this.decoder = ReturnValueConstructor.DECODERS.get( this.type);
 		if( this.decoder == null)
 			throw new IllegalArgumentException( "type " + this.type.getName() + " is not supported");
 

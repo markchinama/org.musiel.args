@@ -12,13 +12,10 @@
  */
 package org.musiel.args.syntax;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.musiel.args.Option;
-import org.musiel.args.ParserException;
 import org.musiel.args.syntax.SyntaxException.Reason;
 
 /**
@@ -102,7 +99,7 @@ public class PosixSyntax implements Syntax {
 	}
 
 	@ Override
-	public ParseResult parse( final Set< Option> options, final String... args) throws ParserException {
+	public SyntaxResult parse( final Set< Option> options, final String... args) {
 		final PosixMachine machine = this.newMachine( options);
 		for( final String arg: args)
 			machine.feed( arg);
@@ -117,123 +114,80 @@ public class PosixSyntax implements Syntax {
 	protected class PosixMachine extends AbstractParseResult {
 
 		protected PosixMachine( final Set< Option> options) {
-			for( final Option option: options) {
+			super( options);
+			for( final Option option: options)
 				PosixSyntax.this.validate( option);
-				for( final String name: option.getNames())
-					if( this.optionDictionary.containsKey( name))
-						throw new IllegalArgumentException( "duplicate option name: " + name);
-					else
-						this.optionDictionary.put( name, option);
-				this.optionNames.put( option, new LinkedList< String>());
-				this.optionArguments.put( option, new LinkedList< String>());
-			}
-		}
-
-		private void pushInCommon( final Option option, final String optionName, final String optionArgument) throws SyntaxException {
-			if( !option.getNames().contains( optionName))
-				throw new IllegalArgumentException( optionName + " is not a name for this option");
-			final List< String> names = this.optionNames.get( option);
-			final List< String> arguments = this.optionArguments.get( option);
-			if( !option.isRepeatable() && !names.isEmpty())
-				throw new SyntaxException( Reason.TOO_MANY_OCCURRENCES, optionName, names);
-			names.add( optionName);
-			arguments.add( optionArgument);
-		}
-
-		/**
-		 * Records an occurrence WITHOUT an argument. If the option requires an argument, or it is not repeatable and this is not the first
-		 * push, a {@link ParserException} is thrown.
-		 * 
-		 * <p>
-		 * If the defining option does not have the specified name, an {@link IllegalArgumentException} is thrown.
-		 * </p>
-		 * 
-		 * @param name
-		 * @return
-		 * @throws SyntaxException
-		 * @throws ParserException
-		 */
-		protected void push( final Option option, final String optionName) throws SyntaxException {
-			if( option.isArgumentRequired())
-				throw new SyntaxException( Reason.ARGUMENT_REQUIRED, optionName);
-			this.pushInCommon( option, optionName, null);
-		}
-
-		/**
-		 * Records an occurrence WITH an argument. If the option does not accept an argument, or it is not repeatable and this is not the
-		 * first push, a {@link ParserException} is thrown.
-		 * 
-		 * <p>
-		 * If the defining option does not have the specified name, an {@link IllegalArgumentException} is thrown. If the given argument is
-		 * <code>null</code>, a {@link NullPointerException} is thrown.
-		 * </p>
-		 * 
-		 * @param name
-		 * @param argument
-		 * @return
-		 * @throws SyntaxException
-		 * @throws ParserException
-		 */
-		protected void push( final Option option, final String optionName, final String optionArgument) throws SyntaxException {
-			if( optionArgument == null)
-				throw new NullPointerException( "value must not be null");
-			if( !option.isArgumentAccepted())
-				throw new SyntaxException( Reason.UNEXPECTED_ARGUMENT, optionName);
-			this.pushInCommon( option, optionName, optionArgument);
 		}
 
 		private boolean optionTerminatedByDoubleHyphen = false;
-		protected Option openOption = null; // if not null, it must require arguments (or it should be pushed in the first place)
+		// the name of a found-but-not-pushed option. openOption is null and non-null when the name is unknown and known, respectively.
+		// if it is a known option, it must require an argument, or it should have been pushed in the first place.
+		// if it is an unknown option, a hyphen-led arg pushes it without argument, other args are considered its argument.
 		protected String openOptionName = null;
+		protected Option openOption = null;
 
-		private void feed( final String arg) throws ParserException {
-			if( this.optionTerminatedByDoubleHyphen)
+		private void feed( final String arg) {
+			if( this.optionTerminatedByDoubleHyphen) {
 				this.operands.add( arg);
-			else if( this.openOptionName != null) {
-				this.push( this.openOption, this.openOptionName, arg);
-				this.openOption = null;
+				return;
+			}
+
+			if( this.openOptionName != null && ( this.openOption != null || !arg.startsWith( "-") || arg.equals( "-"))) {
+				this.push( this.openOptionName, arg);
 				this.openOptionName = null;
-			} else if( "--".equals( arg))
+				this.openOption = null;
+				return;
+			}
+
+			if( "--".equals( arg)) {
 				this.optionTerminatedByDoubleHyphen = true;
-			else if( !arg.startsWith( "-") || arg.equals( "-"))
+				return;
+			}
+
+			if( !arg.startsWith( "-") || arg.equals( "-")) {
 				this.operands.add( arg);
-			else if( !PosixSyntax.this.isLateOptionsAllowed() && !this.operands.isEmpty())
-				throw new SyntaxException( Reason.LATE_OPTION, arg);
-			else
-				this.handleOptionArg( arg);
+				return;
+			}
+
+			if( !this.operands.isEmpty() && !PosixSyntax.this.isLateOptionsAllowed())
+				this.errors.add( new SyntaxException( Reason.LATE_OPTION, arg));
+			this.handleOption( arg);
 		}
 
 		// specially prepared for GNU and those support different types of options...
-		protected void handleOptionArg( final String arg) throws ParserException {
-			this.handleShortOptionArg( arg);
+		protected void handleOption( final String arg) {
+			this.handleShortOption( arg);
 		}
 
-		protected void handleShortOptionArg( final String arg) throws SyntaxException {
+		protected void handleShortOption( final String arg) {
 			final String firstOptionName = arg.substring( 0, 2); // long enough always
 			final Option option = this.optionDictionary.get( firstOptionName);
 			if( option == null)
-				throw new SyntaxException( Reason.UNKNOWN_OPTION, firstOptionName);
+				this.errors.add( new SyntaxException( Reason.UNKNOWN_OPTION, firstOptionName));
 
-			if( !option.isArgumentAccepted()) {
-				this.push( option, firstOptionName);
-				if( arg.length() > 2)
-					this.handleShortOptionArg( "-" + arg.substring( 2));
-			} else if( arg.length() == 2)
-				if( option.isArgumentRequired()) {
-					this.openOption = option;
+			if( arg.length() == 2) {
+				if( option == null || option.isArgumentRequired()) {
 					this.openOptionName = firstOptionName;
+					this.openOption = option;
 				} else
-					this.push( option, firstOptionName);
-			else if( PosixSyntax.this.isJointArgumentsAllowed())
-				this.push( option, firstOptionName, arg.substring( 2));
-			else
-				// joint not allowed => optional not allowed; it accepts => it requires => always throws exception here
-				throw new SyntaxException( Reason.ARGUMENT_REQUIRED, firstOptionName);
+					this.push( firstOptionName, null);
+				return;
+			}
+
+			if( option == null || !option.isArgumentAccepted() || !PosixSyntax.this.isJointArgumentsAllowed()) {
+				this.push( firstOptionName, null);
+				this.handleShortOption( "-" + arg.substring( 2));
+				return;
+			}
+
+			this.push( firstOptionName, arg.substring( 2));
 		}
 
-		public void build() throws SyntaxException {
+		@ Override
+		public void build() {
 			if( this.openOptionName != null)
-				throw new SyntaxException( Reason.ARGUMENT_REQUIRED, this.openOptionName);
+				this.push( this.openOptionName, null);
+			super.build();
 		}
 	}
 }
