@@ -62,7 +62,7 @@ public abstract class AbstractParser< RESULT extends Result< ?>> implements Pars
 	}
 
 	protected Option newOption( final String name, final String... aliases) {
-		return this.newOption( false, true, false, false, name, aliases);
+		return this.newOption( false, false, false, false, name, aliases);
 	}
 
 	protected Option newOption( final boolean required, final boolean repeatable, final boolean acceptsArgument,

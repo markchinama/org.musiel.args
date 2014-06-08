@@ -119,16 +119,16 @@ enum Category {
 	@ Expectation( argument = ArgumentStrategy.NONE, argumentChangeable = false)
 	FLAG,
 
-	@ Expectation( required = true, requiredChangeable = false, repeatable = false, repeatableChangeable = false, argumentChangeable = false)
+	@ Expectation( required = true, requiredChangeable = false, repeatableChangeable = false, argumentChangeable = false)
 	PRIMITIVE,
 
-	@ Expectation( repeatable = false, repeatableChangeable = false)
+	@ Expectation( repeatableChangeable = false)
 	OBJECT,
 
-	@ Expectation( argumentChangeable = false)
+	@ Expectation( repeatable = true, argumentChangeable = false)
 	PRIMITIVE_ARRAY,
 
-	@ Expectation
+	@ Expectation( repeatable = true)
 	OBJECT_ARRAY;
 }
 
@@ -140,7 +140,7 @@ enum Category {
 
 	public boolean requiredChangeable() default true;
 
-	public boolean repeatable() default true;
+	public boolean repeatable() default false;
 
 	public boolean repeatableChangeable() default true;
 

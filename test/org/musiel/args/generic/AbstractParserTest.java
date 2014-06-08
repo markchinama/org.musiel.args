@@ -40,7 +40,7 @@ public abstract class AbstractParserTest {
 	public void options() {
 		Assert.assertEquals( 1, this.parser.getOptions().size());
 		Assert.assertFalse( this.parser.getOption( "-a").isRequired());
-		Assert.assertTrue( this.parser.getOption( "-a").isRepeatable());
+		Assert.assertFalse( this.parser.getOption( "-a").isRepeatable());
 		Assert.assertFalse( this.parser.getOption( "-a").isArgumentAccepted());
 		Assert.assertFalse( this.parser.getOption( "-a").isArgumentRequired());
 		Assert.assertArrayEquals( new String[]{ "-a", "--all"}, this.parser.getOption( "-a").getNames().toArray());
