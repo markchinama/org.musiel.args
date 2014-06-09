@@ -13,21 +13,19 @@
 package org.musiel.args.generic;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 
 import org.musiel.args.ParserException;
 import org.musiel.args.Result;
-import org.musiel.args.syntax.Syntax.SyntaxResult;
 
-public class GenericResult extends GenericAccessor implements Result< GenericResult> {
+public class AbstractResult< ACCESSOR> implements Result< ACCESSOR> {
 
 	private final Collection< ? extends ParserException> exceptions;
+	private final ACCESSOR accessor;
 
-	public GenericResult( final SyntaxResult syntaxResult, final Map< String, ? extends List< String>> operandMap,
-			final Collection< ? extends ParserException> exceptions) {
-		super( syntaxResult, operandMap);
+	public AbstractResult( final Collection< ? extends ParserException> exceptions, final ACCESSOR accessor) {
+		super();
 		this.exceptions = exceptions;
+		this.accessor = accessor;
 	}
 
 	@ Override
@@ -36,14 +34,14 @@ public class GenericResult extends GenericAccessor implements Result< GenericRes
 	}
 
 	@ Override
-	public GenericResult check( final Collection< Class< ? extends ParserException>> exceptionTypes) throws ParserException {
+	public AbstractResult< ACCESSOR> check( final Collection< Class< ? extends ParserException>> exceptionTypes) throws ParserException {
 		for( final Class< ? extends ParserException> exceptionType: exceptionTypes)
 			this.check( exceptionType);
 		return this;
 	}
 
 	@ Override
-	public GenericResult check( final Class< ? extends ParserException> exceptionType) throws ParserException {
+	public AbstractResult< ACCESSOR> check( final Class< ? extends ParserException> exceptionType) throws ParserException {
 		for( final ParserException exception: this.exceptions)
 			if( exceptionType.isInstance( exception))
 				throw exception;
@@ -51,14 +49,14 @@ public class GenericResult extends GenericAccessor implements Result< GenericRes
 	}
 
 	@ Override
-	public GenericResult check() throws ParserException {
+	public ACCESSOR check() throws ParserException {
 		if( !this.exceptions.isEmpty())
 			throw this.exceptions.iterator().next();
-		return this;
+		return this.accessor;
 	}
 
 	@ Override
-	public GenericResult getAccessor() {
-		return this;
+	public ACCESSOR getAccessor() {
+		return this.accessor;
 	}
 }

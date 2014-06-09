@@ -18,7 +18,11 @@ public interface Result< ACCESSOR> {
 
 	public Collection< ? extends ParserException> getErrors();
 
-	public Result< ACCESSOR> check() throws ParserException;
+	public Result< ACCESSOR> check( Collection< Class< ? extends ParserException>> exceptionTypes) throws ParserException;
+
+	public Result< ACCESSOR> check( Class< ? extends ParserException> exceptionType) throws ParserException;
+
+	public ACCESSOR check() throws ParserException;
 
 	public ACCESSOR getAccessor();
 }
