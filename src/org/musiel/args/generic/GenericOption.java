@@ -27,7 +27,7 @@ import org.musiel.args.Option;
  * 
  * @author Bagana
  */
-class GenericOption implements Option {
+public class GenericOption implements Option {
 
 	private final Set< String> names;
 	private final boolean required;

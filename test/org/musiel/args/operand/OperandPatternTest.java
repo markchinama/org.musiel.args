@@ -103,22 +103,21 @@ public class OperandPatternTest {
 		try {
 			OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).match( "a", "b", "d");
 			Assert.fail();
-		} catch( final OperandPatternException exception) {
-			Assert.assertEquals( Reason.AMBIGUOUS, exception.getReason());
+		} catch( final IllegalStateException exception) {
 		}
 
 		try {
 			OperandPattern.compile( OperandPatternTest.PATTERNS[ 2]).match( "a", "b", "c");
 			Assert.fail();
 		} catch( final OperandPatternException exception) {
-			Assert.assertEquals( Reason.TOO_MANY_OPERANDS, exception.getReason());
+			Assert.assertEquals( Reason.TOO_MANY, exception.getReason());
 		}
 
 		try {
 			OperandPattern.compile( OperandPatternTest.PATTERNS[ 2]).match( "a");
 			Assert.fail();
 		} catch( final OperandPatternException exception) {
-			Assert.assertEquals( Reason.TOO_FEW_OPERANDS, exception.getReason());
+			Assert.assertEquals( Reason.TOO_FEW, exception.getReason());
 		}
 
 		Map< String, List< String>> result;

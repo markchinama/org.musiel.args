@@ -16,9 +16,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.musiel.args.ArgumentException;
 import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.Option;
-import org.musiel.args.ParserException;
 import org.musiel.args.syntax.GnuSyntax;
 import org.musiel.args.syntax.Syntax;
 import org.musiel.args.syntax.Syntax.SyntaxResult;
@@ -50,8 +50,8 @@ public class GenericParser extends AbstractParser< GenericResult> {
 	}
 
 	@ Override
-	protected GenericResult adapt( final SyntaxResult syntaxResult, final Map< String, ? extends List< String>> operandMap,
-			final Collection< ? extends ParserException> exceptions) {
-		return new GenericResult( syntaxResult, operandMap, exceptions);
+	protected GenericResult adapt( final SyntaxResult syntaxResult, final Map< String, ? extends List< String>> operands,
+			final Collection< ? extends ArgumentException> exceptions) {
+		return new GenericResult( syntaxResult, operands, exceptions);
 	}
 }

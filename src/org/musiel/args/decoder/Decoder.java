@@ -10,7 +10,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.reflect;
+package org.musiel.args.decoder;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -124,7 +124,7 @@ public interface Decoder< T> {
 			if( stringRepresentation == null)
 				return null;
 			if( stringRepresentation.length() != 1)
-				throw new DecoderException( stringRepresentation + " is not a valid Character value");
+				throw new DecoderException( "invalid char value: " + stringRepresentation);
 			return Character.valueOf( stringRepresentation.charAt( 0));
 		}
 	};

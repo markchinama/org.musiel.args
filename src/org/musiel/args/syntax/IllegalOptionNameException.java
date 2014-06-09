@@ -10,27 +10,16 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.operand;
+package org.musiel.args.syntax;
 
-import org.musiel.args.ArgumentException;
+import org.musiel.args.SyntaxException;
 
-public class OperandPatternException extends ArgumentException {
+public class IllegalOptionNameException extends SyntaxException {
 
-	private static final long serialVersionUID = 8158165952327548121L;
+	private static final long serialVersionUID = 3434527181613152403L;
 
-	public static enum Reason {
-		TOO_MANY, TOO_FEW
-	}
-
-	private final Reason reason;
-
-	public Reason getReason() {
-		return this.reason;
-	}
-
-	public OperandPatternException( final Reason reason) {
-		super( OperandPatternException.class.getPackage().getName() + ".exception", OperandPatternException.class.getName() + "."
-				+ reason.name());
-		this.reason = reason;
+	public IllegalOptionNameException( final String optionName) {
+		super( IllegalOptionNameException.class.getPackage().getName() + ".exception", IllegalOptionNameException.class.getSimpleName(),
+				optionName);
 	}
 }

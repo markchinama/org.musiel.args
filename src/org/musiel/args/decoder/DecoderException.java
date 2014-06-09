@@ -10,27 +10,13 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.operand;
+package org.musiel.args.decoder;
 
-import org.musiel.args.ArgumentException;
+public class DecoderException extends Exception {
 
-public class OperandPatternException extends ArgumentException {
+	private static final long serialVersionUID = 7996264514095528394L;
 
-	private static final long serialVersionUID = 8158165952327548121L;
-
-	public static enum Reason {
-		TOO_MANY, TOO_FEW
-	}
-
-	private final Reason reason;
-
-	public Reason getReason() {
-		return this.reason;
-	}
-
-	public OperandPatternException( final Reason reason) {
-		super( OperandPatternException.class.getPackage().getName() + ".exception", OperandPatternException.class.getName() + "."
-				+ reason.name());
-		this.reason = reason;
+	public DecoderException( final String message) {
+		super( message);
 	}
 }

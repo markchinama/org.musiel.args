@@ -14,15 +14,19 @@ package org.musiel.args.reflect;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.musiel.args.ArgumentException;
 import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.DefaultAccessor;
 import org.musiel.args.operand.OperandPattern;
+import org.musiel.args.operand.OperandPatternException;
 import org.musiel.args.reflect.annotation.Argument;
 import org.musiel.args.reflect.annotation.ArgumentName;
 import org.musiel.args.reflect.annotation.Description;
@@ -30,6 +34,7 @@ import org.musiel.args.reflect.annotation.Operands;
 import org.musiel.args.reflect.annotation.Option;
 import org.musiel.args.reflect.annotation.Repeatable;
 import org.musiel.args.reflect.annotation.Required;
+import org.musiel.args.syntax.OptionException;
 
 abstract class MethodHandler {
 
@@ -52,11 +57,8 @@ abstract class MethodHandler {
 		this.expectation = this.valueConstructor.expectation;
 	}
 
-	public Object decode( final DefaultAccessor result) throws DecoderException {
-		return this.valueConstructor.decode( this.findData( result));
-	}
-
-	protected abstract List< String> findData( DefaultAccessor result);
+	public abstract Object decode( final DefaultAccessor result, Collection< ? extends ArgumentException> parseTimeExceptions)
+			throws FutureException;
 }
 
 class OptionHandler extends MethodHandler {
@@ -86,6 +88,7 @@ class OptionHandler extends MethodHandler {
 	}
 
 	private final String name;
+	private final Set< String> names = new HashSet<>();
 
 	protected OptionHandler( final Method method, final ReflectParser< ?> parser) {
 		super( method);
@@ -95,9 +98,11 @@ class OptionHandler extends MethodHandler {
 		final Option option = method.getAnnotation( Option.class);
 		if( option != null && option.value().length > 0) {
 			this.name = option.value()[ 0];
-			additionalNames = Arrays.copyOfRange( option.value(), 1, option.value().length);
+			Collections.addAll( this.names, option.value());
+			additionalNames = option.value(); // duplicates are okay
 		} else {
 			this.name = OptionHandler.constructName( method.getName());
+			this.names.add( this.name);
 			additionalNames = new String[]{};
 		}
 
@@ -142,8 +147,23 @@ class OptionHandler extends MethodHandler {
 	}
 
 	@ Override
-	protected List< String> findData( final DefaultAccessor result) {
-		return result.getArguments( this.name);
+	public Object decode( final DefaultAccessor result, final Collection< ? extends ArgumentException> parseTimeExceptions)
+			throws FutureException {
+		final List< String> arguments = result.getArguments( this.name);
+		try {
+			return this.valueConstructor.construct( arguments);
+		} catch( final PreconditionException exception) {
+			final Collection< ArgumentException> possibleCauses = new LinkedList<>();
+			for( final ArgumentException parseTimeException: parseTimeExceptions)
+				if( parseTimeException instanceof OptionException
+						&& this.names.contains( ( ( OptionException) parseTimeException).getOptionName()))
+					possibleCauses.add( parseTimeException);
+			throw new FutureException( possibleCauses);
+		} catch( final ReturnValueConstructionException exception) {
+			final List< String> names = result.getNames( this.name);
+			throw new FutureException( new IllegalOptionArgumentException( names.get( exception.getIndex()), arguments.get( exception
+					.getIndex()), exception.getCause()));
+		}
 	}
 }
 
@@ -197,8 +217,21 @@ class OperandHandler extends AbstractOperandHandler {
 	}
 
 	@ Override
-	protected List< String> findData( final DefaultAccessor result) {
-		return result.getOperands( this.name);
+	public Object decode( final DefaultAccessor result, final Collection< ? extends ArgumentException> parseTimeExceptions)
+			throws FutureException {
+		final List< String> operands = result.getOperands( this.name);
+		try {
+			return this.valueConstructor.construct( operands);
+		} catch( final PreconditionException exception) {
+			final Collection< ArgumentException> possibleCauses = new LinkedList<>();
+			for( final ArgumentException parseTimeException: parseTimeExceptions)
+				if( parseTimeException instanceof OperandPatternException)
+					possibleCauses.add( parseTimeException);
+			throw new FutureException( possibleCauses);
+		} catch( final ReturnValueConstructionException exception) {
+			throw new FutureException( new IllegalOperandValueException( this.name, operands.get( exception.getIndex()),
+					exception.getCause()));
+		}
 	}
 }
 
@@ -209,7 +242,19 @@ class OperandsHandler extends AbstractOperandHandler {
 	}
 
 	@ Override
-	protected List< String> findData( final DefaultAccessor result) {
-		return result.getOperands();
+	public Object decode( final DefaultAccessor result, final Collection< ? extends ArgumentException> parseTimeExceptions)
+			throws FutureException {
+		final List< String> operands = result.getOperands();
+		try {
+			return this.valueConstructor.construct( operands);
+		} catch( final PreconditionException exception) {
+			final Collection< ArgumentException> possibleCauses = new LinkedList<>();
+			for( final ArgumentException parseTimeException: parseTimeExceptions)
+				if( parseTimeException instanceof OperandPatternException)
+					possibleCauses.add( parseTimeException);
+			throw new FutureException( possibleCauses);
+		} catch( final ReturnValueConstructionException exception) {
+			throw new FutureException( new IllegalOperandValueException( operands.get( exception.getIndex()), exception.getCause()));
+		}
 	}
 }

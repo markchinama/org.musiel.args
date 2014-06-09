@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.musiel.args.ArgumentPolicy;
+import org.musiel.args.decoder.Decoder;
+import org.musiel.args.decoder.DecoderException;
 
 class ReturnValueConstructor {
 
@@ -55,20 +57,42 @@ class ReturnValueConstructor {
 		}
 	}
 
-	public Object decode( final List< String> data) throws DecoderException {
+	public Object construct( final List< String> data) throws PreconditionException, ReturnValueConstructionException {
+		if( data == null)
+			throw new PreconditionException();
 		switch( this.category) {
+			case MANDATORY_FLAG:
+				return null;
 			case FLAG:
 				return Boolean.valueOf( !data.isEmpty());
-			case MANDATORY_FLAG:
 			case PRIMITIVE:
+				if( data.size() < 1 || data.get( 0) == null)
+					throw new PreconditionException();
+				try {
+					return this.decoder.decode( data.get( 0));
+				} catch( final DecoderException exception) {
+					throw new ReturnValueConstructionException( 0, exception);
+				}
 			case OBJECT:
-				return data.isEmpty()? null: this.decoder.decode( data.get( 0));
+				try {
+					return data.isEmpty()? null: this.decoder.decode( data.get( 0));
+				} catch( final DecoderException exception) {
+					throw new ReturnValueConstructionException( 0, exception);
+				}
 			case PRIMITIVE_ARRAY:
+				if( data.contains( null))
+					throw new PreconditionException();
 			case OBJECT_ARRAY:
 				final Object decoded = Array.newInstance( this.type, data.size());
 				int decodeIndex = 0;
-				for( final String item: data)
-					Array.set( decoded, decodeIndex++, this.decoder.decode( item));
+				for( final String item: data) {
+					try {
+						Array.set( decoded, decodeIndex, this.decoder.decode( item));
+					} catch( final DecoderException exception) {
+						throw new ReturnValueConstructionException( decodeIndex, exception);
+					}
+					++decodeIndex;
+				}
 				return decoded;
 			default:
 				throw new AssertionError();

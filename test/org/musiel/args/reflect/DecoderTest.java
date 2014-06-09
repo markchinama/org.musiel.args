@@ -20,8 +20,8 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.musiel.args.reflect.Decoder;
-import org.musiel.args.reflect.DecoderException;
+import org.musiel.args.decoder.Decoder;
+import org.musiel.args.decoder.DecoderException;
 
 public class DecoderTest {
 

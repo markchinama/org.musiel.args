@@ -14,42 +14,43 @@ package org.musiel.args.generic;
 
 import java.util.Collection;
 
-import org.musiel.args.ParserException;
+import org.musiel.args.ArgumentException;
 import org.musiel.args.Result;
 
 public class AbstractResult< ACCESSOR> implements Result< ACCESSOR> {
 
-	private final Collection< ? extends ParserException> exceptions;
+	private final Collection< ? extends ArgumentException> exceptions;
 	private final ACCESSOR accessor;
 
-	public AbstractResult( final Collection< ? extends ParserException> exceptions, final ACCESSOR accessor) {
+	public AbstractResult( final Collection< ? extends ArgumentException> exceptions, final ACCESSOR accessor) {
 		super();
 		this.exceptions = exceptions;
 		this.accessor = accessor;
 	}
 
 	@ Override
-	public Collection< ? extends ParserException> getErrors() {
+	public Collection< ? extends ArgumentException> getErrors() {
 		return this.exceptions;
 	}
 
 	@ Override
-	public AbstractResult< ACCESSOR> check( final Collection< Class< ? extends ParserException>> exceptionTypes) throws ParserException {
-		for( final Class< ? extends ParserException> exceptionType: exceptionTypes)
+	public AbstractResult< ACCESSOR> check( final Collection< Class< ? extends ArgumentException>> exceptionTypes)
+			throws ArgumentException {
+		for( final Class< ? extends ArgumentException> exceptionType: exceptionTypes)
 			this.check( exceptionType);
 		return this;
 	}
 
 	@ Override
-	public AbstractResult< ACCESSOR> check( final Class< ? extends ParserException> exceptionType) throws ParserException {
-		for( final ParserException exception: this.exceptions)
+	public AbstractResult< ACCESSOR> check( final Class< ? extends ArgumentException> exceptionType) throws ArgumentException {
+		for( final ArgumentException exception: this.exceptions)
 			if( exceptionType.isInstance( exception))
 				throw exception;
 		return this;
 	}
 
 	@ Override
-	public ACCESSOR check() throws ParserException {
+	public ACCESSOR check() throws ArgumentException {
 		if( !this.exceptions.isEmpty())
 			throw this.exceptions.iterator().next();
 		return this.accessor;

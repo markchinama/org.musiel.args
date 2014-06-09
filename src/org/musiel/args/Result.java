@@ -16,13 +16,13 @@ import java.util.Collection;
 
 public interface Result< ACCESSOR> {
 
-	public Collection< ? extends ParserException> getErrors();
+	public Collection< ? extends ArgumentException> getErrors();
 
-	public Result< ACCESSOR> check( Collection< Class< ? extends ParserException>> exceptionTypes) throws ParserException;
+	public Result< ACCESSOR> check( Collection< Class< ? extends ArgumentException>> exceptionTypes) throws ArgumentException;
 
-	public Result< ACCESSOR> check( Class< ? extends ParserException> exceptionType) throws ParserException;
+	public Result< ACCESSOR> check( Class< ? extends ArgumentException> exceptionType) throws ArgumentException;
 
-	public ACCESSOR check() throws ParserException;
+	public ACCESSOR check() throws ArgumentException;
 
 	public ACCESSOR getAccessor();
 }

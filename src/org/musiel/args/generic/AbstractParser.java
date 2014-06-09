@@ -22,11 +22,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.musiel.args.ArgumentException;
 import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.Option;
 import org.musiel.args.Parser;
-import org.musiel.args.ParserException;
 import org.musiel.args.Result;
+import org.musiel.args.SyntaxException;
 import org.musiel.args.operand.OperandPattern;
 import org.musiel.args.operand.OperandPatternException;
 import org.musiel.args.syntax.Syntax;
@@ -98,18 +99,42 @@ public abstract class AbstractParser< RESULT extends Result< ?>> implements Pars
 	}
 
 	protected void setOperandPattern( final String operandPattern) {
-		this.operandPattern = operandPattern == null? null: OperandPattern.compile( operandPattern);
+		this.operandPattern = operandPattern == null? null: this.compileAndTestPattern( operandPattern);
+	}
+
+	private OperandPattern compileAndTestPattern( final String operandPattern) {
+		final OperandPattern compiled = OperandPattern.compile( operandPattern);
+		final String[][] ambiguityExample = compiled.findAmbiguityExample();
+		if( ambiguityExample == null)
+			return compiled;
+		final StringBuilder message =
+				new StringBuilder().append( "operand pattern \"").append( operandPattern)
+						.append( "\" is ambiguous, for example, if the input length is ").append( ambiguityExample[ 0].length)
+						.append( ", there are at least following two interpretation: \"");
+		this.append( message, ambiguityExample[ 0]);
+		message.append( "\" and \"");
+		this.append( message, ambiguityExample[ 0]);
+		message.append( "\"");
+		throw new IllegalArgumentException( message.toString());
+	}
+
+	private void append( final StringBuilder message, final String[] strings) {
+		for( int index = 0; index < strings.length; ++index) {
+			if( index >= 0)
+				message.append( ' ');
+			message.append( strings[ index]);
+		}
 	}
 
 	@ Override
-	public RESULT parse( final String[] args, final int offset) {
+	public RESULT parse( final String[] args, final int offset) throws SyntaxException {
 		if( offset < 0 || offset >= args.length)
 			throw new ArrayIndexOutOfBoundsException( offset);
 		return this.parse( args, offset, args.length - offset);
 	}
 
 	@ Override
-	public RESULT parse( final String[] args, final int offset, final int length) {
+	public RESULT parse( final String[] args, final int offset, final int length) throws SyntaxException {
 		if( offset < 0 || offset >= args.length)
 			throw new ArrayIndexOutOfBoundsException( offset);
 		if( length < 0)
@@ -120,9 +145,9 @@ public abstract class AbstractParser< RESULT extends Result< ?>> implements Pars
 	}
 
 	@ Override
-	public RESULT parse( final String... args) {
+	public RESULT parse( final String... args) throws SyntaxException {
 		final SyntaxResult syntaxResult = this.syntax.parse( Collections.unmodifiableSet( this.options), args);
-		final Collection< ParserException> exceptions = new LinkedList< ParserException>( syntaxResult.getErrors());
+		final Collection< ArgumentException> exceptions = new LinkedList< ArgumentException>( syntaxResult.getErrors());
 		Map< String, List< String>> operandMap = null;
 		try {
 			operandMap = this.operandPattern == null? null: this.operandPattern.match( syntaxResult.getOperands());
@@ -133,6 +158,6 @@ public abstract class AbstractParser< RESULT extends Result< ?>> implements Pars
 		return this.adapt( syntaxResult, operandMap, Collections.unmodifiableCollection( exceptions));
 	}
 
-	protected abstract RESULT adapt( SyntaxResult syntaxResult, Map< String, ? extends List< String>> operandMap,
-			Collection< ? extends ParserException> exceptions);
+	protected abstract RESULT adapt( SyntaxResult syntaxResult, Map< String, ? extends List< String>> operands,
+			Collection< ? extends ArgumentException> exceptions);
 }

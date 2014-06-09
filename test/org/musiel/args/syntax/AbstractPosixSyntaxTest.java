@@ -22,10 +22,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.musiel.args.ArgumentException;
 import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.Option;
+import org.musiel.args.SyntaxException;
 import org.musiel.args.syntax.Syntax.SyntaxResult;
-import org.musiel.args.syntax.SyntaxException.Reason;
 
 public abstract class AbstractPosixSyntaxTest {
 
@@ -151,22 +152,15 @@ public abstract class AbstractPosixSyntaxTest {
 		this.options.add( this.optionO);
 	}
 
-	protected void verifyException( final Collection< ? extends SyntaxException> errors, final String message) {
-		for( final SyntaxException exception: errors)
-			if( exception.getMessage().contains( message))
-				return;
-		Assert.fail();
-	}
-
-	protected void verifyException( final Collection< ? extends SyntaxException> errors, final Reason reason) {
-		for( final SyntaxException exception: errors)
-			if( reason.equals( exception.getReason()))
+	protected void verifyException( final Collection< ? extends ArgumentException> errors, final String message) {
+		for( final ArgumentException exception: errors)
+			if( message.equals( exception.getMessage()))
 				return;
 		Assert.fail();
 	}
 
 	@ Test
-	public void testParsingUnsupportedOption() {
+	public void testParsingUnsupportedOption() throws SyntaxException {
 		final Set< Option> options = new HashSet<>( this.options);
 		Assert.assertTrue( this.syntax.parse( options).getErrors().isEmpty());
 		options.add( this.option( "-?"));
@@ -179,7 +173,7 @@ public abstract class AbstractPosixSyntaxTest {
 	}
 
 	@ Test
-	public void testParsingDuplicateNames() {
+	public void testParsingDuplicateNames() throws SyntaxException {
 		final Set< Option> options = new HashSet<>( this.options);
 		Assert.assertTrue( this.syntax.parse( options).getErrors().isEmpty());
 		options.add( this.option( "-x", "-a"));
@@ -192,22 +186,22 @@ public abstract class AbstractPosixSyntaxTest {
 	}
 
 	@ Test
-	public void testMissingArgument() {
-		this.verifyException( this.syntax.parse( this.options, "-o").getErrors(), Reason.ARGUMENT_REQUIRED);
+	public void testMissingArgument() throws SyntaxException {
+		this.verifyException( this.syntax.parse( this.options, "-o").getErrors(), "option -o requires an argument");
 	}
 
 	@ Test
-	public void testMissingArgument2() {
-		this.verifyException( this.syntax.parse( this.options, "-oa").getErrors(), Reason.ARGUMENT_REQUIRED);
+	public void testMissingArgument2() throws SyntaxException {
+		this.verifyException( this.syntax.parse( this.options, "-oa").getErrors(), "option -o requires an argument");
 	}
 
 	@ Test
-	public void testUnknownOption() {
-		this.verifyException( this.syntax.parse( this.options, "-x").getErrors(), Reason.UNKNOWN_OPTION);
+	public void testUnknownOption() throws SyntaxException {
+		this.verifyException( this.syntax.parse( this.options, "-x").getErrors(), "unknown option: -x");
 	}
 
 	@ Test
-	public void testParse() {
+	public void testParse() throws SyntaxException {
 		final SyntaxResult result = this.syntax.parse( this.options, "-a", "-o", "file1", "-o", "-", "-", "xyz", "--", "-a", "-a");
 		Assert.assertTrue( result.getErrors().isEmpty());
 		Assert.assertFalse( result.getNames( "-a").isEmpty());
@@ -221,7 +215,7 @@ public abstract class AbstractPosixSyntaxTest {
 	}
 
 	@ Test
-	public void testParseJoint() {
+	public void testParseJoint() throws SyntaxException {
 		this.syntax.setJointArgumentsAllowed( true);
 		final SyntaxResult result = this.syntax.parse( this.options, "-a", "-o", "file1", "-ooutput2", "-", "xyz", "--", "-a", "-a");
 		Assert.assertTrue( result.getErrors().isEmpty());
@@ -236,7 +230,7 @@ public abstract class AbstractPosixSyntaxTest {
 	}
 
 	@ Test
-	public void parseOptional() {
+	public void parseOptional() throws SyntaxException {
 		final Set< Option> options = new HashSet<>( this.options);
 		options.add( this.option( false, true, ArgumentPolicy.OPTIONAL, "-p"));
 		this.syntax.setOptionalArgumentsAllowed( true);

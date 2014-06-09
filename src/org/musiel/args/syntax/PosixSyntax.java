@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.musiel.args.Option;
-import org.musiel.args.syntax.SyntaxException.Reason;
+import org.musiel.args.SyntaxException;
 
 /**
  * A {@link Syntax} implementation compliant with the <a
@@ -91,15 +91,19 @@ public class PosixSyntax implements Syntax {
 			this.validateName( name);
 	}
 
-	private static final Pattern OPTION_NAME_PATTERN = Pattern.compile( "^\\-[A-Za-z0-9]$");
-
 	protected void validateName( final String name) throws IllegalArgumentException {
-		if( !PosixSyntax.OPTION_NAME_PATTERN.matcher( name).find())
+		if( !this.isValidName( name))
 			throw new IllegalArgumentException( "\"" + name + "\" is not a valid POSIX option name");
 	}
 
+	private static final Pattern OPTION_NAME_PATTERN = Pattern.compile( "^\\-[A-Za-z0-9]$");
+
+	private boolean isValidName( final String name) {
+		return PosixSyntax.OPTION_NAME_PATTERN.matcher( name).find();
+	}
+
 	@ Override
-	public SyntaxResult parse( final Set< Option> options, final String... args) {
+	public SyntaxResult parse( final Set< Option> options, final String... args) throws SyntaxException {
 		final PosixMachine machine = this.newMachine( options);
 		for( final String arg: args)
 			machine.feed( arg);
@@ -126,7 +130,7 @@ public class PosixSyntax implements Syntax {
 		protected String openOptionName = null;
 		protected Option openOption = null;
 
-		private void feed( final String arg) {
+		private void feed( final String arg) throws SyntaxException {
 			if( this.optionTerminatedByDoubleHyphen) {
 				this.operands.add( arg);
 				return;
@@ -149,38 +153,42 @@ public class PosixSyntax implements Syntax {
 				return;
 			}
 
-			if( !this.operands.isEmpty() && !PosixSyntax.this.isLateOptionsAllowed())
-				this.errors.add( new SyntaxException( Reason.LATE_OPTION, arg));
 			this.handleOption( arg);
 		}
 
 		// specially prepared for GNU and those support different types of options...
-		protected void handleOption( final String arg) {
-			this.handleShortOption( arg);
+		protected void handleOption( final String arg) throws SyntaxException {
+			this.handleShortOption( arg, arg);
 		}
 
-		protected void handleShortOption( final String arg) {
-			final String firstOptionName = arg.substring( 0, 2); // long enough always
-			final Option option = this.optionDictionary.get( firstOptionName);
-			if( option == null)
-				this.errors.add( new SyntaxException( Reason.UNKNOWN_OPTION, firstOptionName));
+		protected void handleShortOption( final String arg, final String originalWholeArg) throws SyntaxException {
+			final String optionName = arg.substring( 0, 2); // long enough always
+			if( !PosixSyntax.this.isValidName( optionName))
+				throw new IllegalOptionNameException( optionName);
 
+			final Option option = this.optionDictionary.get( optionName);
+			if( option == null)
+				this.errors.add( new UnknownOptionException( optionName));
+			if( !this.operands.isEmpty() && !PosixSyntax.this.isLateOptionsAllowed())
+				this.errors.add( new LateOptionException( optionName));
+
+			// nothing is following the option name in the same arg
 			if( arg.length() == 2) {
 				if( option == null || option.getArgumentPolicy().isRequired()) {
-					this.openOptionName = firstOptionName;
+					this.openOptionName = optionName;
 					this.openOption = option;
 				} else
-					this.push( firstOptionName, null);
+					this.push( optionName, null);
 				return;
 			}
 
-			if( option == null || !option.getArgumentPolicy().isAccepted() || !PosixSyntax.this.isJointArgumentsAllowed()) {
-				this.push( firstOptionName, null);
-				this.handleShortOption( "-" + arg.substring( 2));
+			if( option != null && option.getArgumentPolicy().isAccepted() && PosixSyntax.this.isJointArgumentsAllowed()) {
+				this.push( optionName, arg.substring( 2));
 				return;
 			}
 
-			this.push( firstOptionName, arg.substring( 2));
+			this.push( optionName, null);
+			this.handleShortOption( "-" + arg.substring( 2), originalWholeArg); // tail recursive, although VM's do not optimize
 		}
 
 		@ Override

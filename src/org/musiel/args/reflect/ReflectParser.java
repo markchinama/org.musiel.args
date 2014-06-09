@@ -19,16 +19,17 @@ import java.lang.reflect.Proxy;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.musiel.args.ArgumentException;
 import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.DefaultAccessor;
 import org.musiel.args.Option;
-import org.musiel.args.ParserException;
 import org.musiel.args.Result;
+import org.musiel.args.SyntaxException;
 import org.musiel.args.generic.AbstractResult;
 import org.musiel.args.generic.GenericAccessor;
 import org.musiel.args.generic.InternationalizedParser;
@@ -84,19 +85,19 @@ public class ReflectParser< MODEL> extends InternationalizedParser< Result< MODE
 	}
 
 	@ Override
-	protected Result< MODEL> adapt( final SyntaxResult syntaxResult, final Map< String, ? extends List< String>> operandMap,
-			final Collection< ? extends ParserException> exceptions) {
-		final LinkedList< ParserException> allExceptions = new LinkedList<>( exceptions);
-		final GenericAccessor basicAccessor = new GenericAccessor( syntaxResult, operandMap);
-		final Map< Method, DecoderException> decoderExceptions = new HashMap<>();
+	protected Result< MODEL> adapt( final SyntaxResult syntaxResult, final Map< String, ? extends List< String>> operands,
+			final Collection< ? extends ArgumentException> parseTimeExceptions) {
+		final Collection< ArgumentException> allExceptions = new LinkedHashSet<>( parseTimeExceptions);
+		final GenericAccessor basicAccessor = new GenericAccessor( syntaxResult, operands);
+		final Map< Method, Collection< ArgumentException>> decodeTimeExceptions = new HashMap<>();
 		final Map< Method, Object> decoded = new HashMap<>();
 		for( final Entry< Method, MethodHandler> methodHandlerPair: this.methodHandlers.entrySet())
 			if( !DefaultAccessor.class.equals( methodHandlerPair.getKey().getDeclaringClass()))
 				try {
-					decoded.put( methodHandlerPair.getKey(), methodHandlerPair.getValue().decode( basicAccessor));
-				} catch( final DecoderException exception) {
-					decoderExceptions.put( methodHandlerPair.getKey(), exception);
-					allExceptions.add( exception);
+					decoded.put( methodHandlerPair.getKey(), methodHandlerPair.getValue().decode( basicAccessor, parseTimeExceptions));
+				} catch( final FutureException exception) {
+					decodeTimeExceptions.put( methodHandlerPair.getKey(), exception.getPossibleCauses());
+					allExceptions.addAll( exception.getPossibleCauses());
 				}
 
 		return new AbstractResult< MODEL>( Collections.unmodifiableCollection( allExceptions), this.model.cast( Proxy.newProxyInstance(
@@ -107,18 +108,19 @@ public class ReflectParser< MODEL> extends InternationalizedParser< Result< MODE
 							InvocationTargetException {
 						if( DefaultAccessor.class.equals( method.getDeclaringClass()))
 							return method.invoke( basicAccessor, args);
-						if( decoderExceptions.containsKey( method))
-							throw new UncheckedParserException( decoderExceptions.get( method));
+						if( decodeTimeExceptions.containsKey( method))
+							throw new UncheckedParserException( decodeTimeExceptions.get( method));
 						return decoded.get( method);
 					}
 				})));
 	}
 
-	public static < MODEL>Result< MODEL> parse( final Syntax syntax, final Class< MODEL> resultType, final String... args) {
+	public static < MODEL>Result< MODEL> parse( final Syntax syntax, final Class< MODEL> resultType, final String... args)
+			throws SyntaxException {
 		return new ReflectParser< MODEL>( syntax, resultType).parse( args);
 	}
 
-	public static < MODEL>Result< MODEL> parse( final Class< MODEL> resultType, final String... args) {
+	public static < MODEL>Result< MODEL> parse( final Class< MODEL> resultType, final String... args) throws SyntaxException {
 		return new ReflectParser< MODEL>( resultType).parse( args);
 	}
 }

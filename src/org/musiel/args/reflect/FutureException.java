@@ -13,17 +13,23 @@
 package org.musiel.args.reflect;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 
 import org.musiel.args.ArgumentException;
 
-public class UncheckedParserException extends RuntimeException {
+class FutureException extends Exception {
 
-	private static final long serialVersionUID = -5387317336480809166L;
+	private static final long serialVersionUID = -7849190289128140105L;
 
 	private final Collection< ArgumentException> possibleCauses = new LinkedList<>();
 
-	public UncheckedParserException( final Collection< ArgumentException> possibleCauses) {
+	public FutureException( final ArgumentException... possibleCauses) {
+		super( possibleCauses.length <= 0? null: possibleCauses[ 0]);
+		Collections.addAll( this.possibleCauses, possibleCauses);
+	}
+
+	public FutureException( final Collection< ArgumentException> possibleCauses) {
 		super( possibleCauses.isEmpty()? null: possibleCauses.iterator().next());
 		this.possibleCauses.addAll( possibleCauses);
 	}

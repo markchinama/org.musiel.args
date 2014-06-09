@@ -317,7 +317,7 @@ public class OperandPattern {
 	}
 
 	public boolean isMoreThanOneOperandsPossible() {
-		for( State state: this.initialState.transitions.keySet())
+		for( final State state: this.initialState.transitions.keySet())
 			if( !state.transitions.isEmpty())
 				return true;
 		return false;
@@ -430,7 +430,7 @@ public class OperandPattern {
 			explorers = updatedExplorers;
 
 			if( explorers.isEmpty())
-				throw new OperandPatternException( Reason.TOO_MANY_OPERANDS);
+				throw new OperandPatternException( Reason.TOO_MANY);
 		}
 
 		final Set< String[]> haltingPaths = new HashSet<>();
@@ -438,9 +438,9 @@ public class OperandPattern {
 			if( explorer.state.finalState)
 				haltingPaths.add( explorer.path);
 		if( haltingPaths.isEmpty())
-			throw new OperandPatternException( Reason.TOO_FEW_OPERANDS);
+			throw new OperandPatternException( Reason.TOO_FEW);
 		if( haltingPaths.size() > 1)
-			throw new OperandPatternException( Reason.AMBIGUOUS);
+			throw new IllegalStateException( "the pattern is ambiguous, should not be used for matching");
 		final String[] path = haltingPaths.iterator().next();
 
 		final Map< String, List< String>> result = new TreeMap<>();

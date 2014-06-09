@@ -23,11 +23,18 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.musiel.args.ArgumentException;
 import org.musiel.args.Option;
 import org.musiel.args.syntax.Syntax.SyntaxResult;
-import org.musiel.args.syntax.SyntaxException.Reason;
 
 public abstract class AbstractParseResult implements SyntaxResult {
+
+	protected final LinkedList< ArgumentException> errors = new LinkedList<>();
+
+	@ Override
+	public Collection< ? extends ArgumentException> getErrors() {
+		return Collections.unmodifiableCollection( this.errors);
+	}
 
 	private final Set< Option> options;
 	protected final Map< String, Option> optionDictionary = new TreeMap<>();
@@ -93,10 +100,10 @@ public abstract class AbstractParseResult implements SyntaxResult {
 			final List< String> arguments = this.getArgumentsInternal( option.getName());
 
 			if( option.isRequired() && ( names == null || names.isEmpty()))
-				this.errors.add( new SyntaxException( Reason.MISSING_OPTION, option.getName()));
+				this.errors.add( new MissingOptionException( option.getName()));
 
 			if( !option.isRepeatable() && names != null && names.size() > 1)
-				this.errors.add( new SyntaxException( Reason.TOO_MANY_OCCURRENCES, names.get( 1), names));
+				this.errors.add( new TooManyOccurrenceException( names.get( 1), names));
 
 			if( !option.getArgumentPolicy().isAccepted()) {
 				final Iterator< String> nameIterator = names.iterator();
@@ -105,7 +112,7 @@ public abstract class AbstractParseResult implements SyntaxResult {
 					final String name = nameIterator.next();
 					final String argument = argumentIterator.next();
 					if( argument != null)
-						this.errors.add( new SyntaxException( Reason.UNEXPECTED_ARGUMENT, name));
+						this.errors.add( new UnexpectedArgumentException( name));
 				}
 			}
 
@@ -116,7 +123,7 @@ public abstract class AbstractParseResult implements SyntaxResult {
 					final String name = nameIterator.next();
 					final String argument = argumentIterator.next();
 					if( argument == null)
-						this.errors.add( new SyntaxException( Reason.ARGUMENT_REQUIRED, name));
+						this.errors.add( new ArgumentRequiredException( name));
 				}
 			}
 		}
@@ -129,12 +136,5 @@ public abstract class AbstractParseResult implements SyntaxResult {
 	private void toArrayLists( final Map< String, List< String>> map) {
 		for( final Entry< String, List< String>> entry: map.entrySet())
 			entry.setValue( new ArrayList<>( entry.getValue()));
-	}
-
-	protected final LinkedList< SyntaxException> errors = new LinkedList<>();
-
-	@ Override
-	public Collection< ? extends SyntaxException> getErrors() {
-		return Collections.unmodifiableCollection( this.errors);
 	}
 }

@@ -16,8 +16,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.musiel.args.ArgumentException;
 import org.musiel.args.Option;
-import org.musiel.args.ParserException;
+import org.musiel.args.SyntaxException;
 
 /**
  * Many different kinds of syntax for command line arguments exist out there, a programmer may prefer one over another, or may want
@@ -47,9 +48,9 @@ public interface Syntax {
 	 * @param options
 	 * @param args
 	 * @return
-	 * @throws ParserException
+	 * @throws SyntaxException
 	 */
-	public SyntaxResult parse( Set< Option> options, String... args);
+	public SyntaxResult parse( Set< Option> options, String... args) throws SyntaxException;
 
 	/**
 	 * The result of a parsing process.
@@ -68,7 +69,7 @@ public interface Syntax {
 		 * 
 		 * @return
 		 */
-		public Collection< ? extends SyntaxException> getErrors();
+		public Collection< ? extends ArgumentException> getErrors();
 
 		/**
 		 * Returns the option names used for an option, in the order they occurred.

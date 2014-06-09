@@ -31,9 +31,9 @@ public interface Parser< RESULT extends Result< ?>> {
 
 	public String getOperandPattern();
 
-	public RESULT parse( final String... args);
+	public RESULT parse( final String... args) throws SyntaxException;
 
-	public RESULT parse( final String[] args, final int offset);
+	public RESULT parse( final String[] args, final int offset) throws SyntaxException;
 
-	public RESULT parse( final String[] args, final int offset, final int length);
+	public RESULT parse( final String[] args, final int offset, final int length) throws SyntaxException;
 }

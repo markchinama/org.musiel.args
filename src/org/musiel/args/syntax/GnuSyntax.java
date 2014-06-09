@@ -17,7 +17,7 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.musiel.args.Option;
-import org.musiel.args.syntax.SyntaxException.Reason;
+import org.musiel.args.SyntaxException;
 
 /**
  * A {@link Syntax} implementation compliant with the GNU <a
@@ -86,12 +86,16 @@ public class GnuSyntax extends PosixSyntax {
 		this.setLateOptionsAllowed( true);
 	}
 
-	private static final Pattern OPTION_NAME_PATTERN = Pattern.compile( "^\\-(?:[A-Za-z0-9]|\\-[A-Za-z0-9\\-]+)$");
-
 	@ Override
 	protected void validateName( final String name) throws IllegalArgumentException {
-		if( !GnuSyntax.OPTION_NAME_PATTERN.matcher( name).find())
+		if( !this.isValidName( name))
 			throw new IllegalArgumentException( "\"" + name + "\" is not a valid GNU option name");
+	}
+
+	private static final Pattern OPTION_NAME_PATTERN = Pattern.compile( "^\\-(?:[A-Za-z0-9]|\\-[A-Za-z0-9\\-]+)$");
+
+	private boolean isValidName( final String name) {
+		return GnuSyntax.OPTION_NAME_PATTERN.matcher( name).find();
 	}
 
 	@ Override
@@ -106,45 +110,49 @@ public class GnuSyntax extends PosixSyntax {
 		}
 
 		@ Override
-		protected void handleOption( final String arg) {
+		protected void handleOption( final String arg) throws SyntaxException {
 			if( arg.startsWith( "--"))
 				this.handleLongOption( arg);
 			else
-				this.handleShortOption( arg);
+				super.handleOption( arg);
 		}
 
-		private void handleLongOption( final String arg) {
+		private void handleLongOption( final String arg) throws IllegalOptionNameException {
 			final int equalPos = arg.indexOf( '=');
-			String name = equalPos < 0? arg: arg.substring( 0, equalPos); // "" is possible, but i'm gonna ignore it
+			String optionName = equalPos < 0? arg: arg.substring( 0, equalPos); // "--" is possible here
 			final String argument = equalPos < 0? null: arg.substring( equalPos + 1);
-			Option option = this.optionDictionary.get( name);
+			if( !GnuSyntax.this.isValidName( optionName))
+				throw new IllegalOptionNameException( optionName);
+			if( !this.operands.isEmpty() && !GnuSyntax.this.isLateOptionsAllowed())
+				this.errors.add( new LateOptionException( optionName));
 
+			Option option = this.optionDictionary.get( optionName);
 			if( option == null)
-				if( GnuSyntax.this.isAbbreviationAllowed())
-					option = this.optionDictionary.get( name = this.findAbbreviatedName( name));
+				if( !GnuSyntax.this.isAbbreviationAllowed())
+					this.errors.add( new UnknownOptionException( optionName));
 				else
-					this.errors.add( new SyntaxException( Reason.UNKNOWN_OPTION, name));
+					option = this.optionDictionary.get( optionName = this.findAbbreviatedName( optionName));
 
 			if( argument != null || option != null && !option.getArgumentPolicy().isRequired())
-				this.push( name, argument);
+				this.push( optionName, argument);
 			else {
-				this.openOptionName = name;
+				this.openOptionName = optionName;
 				this.openOption = option;
 			}
 		}
 
-		private String findAbbreviatedName( final String name) {
+		private String findAbbreviatedName( final String optionName) {
 			final Set< String> candidates = new TreeSet<>();
-			for( final String namePossible: this.optionDictionary.keySet())
-				if( namePossible.startsWith( name))
-					candidates.add( namePossible);
+			for( final String candidate: this.optionDictionary.keySet())
+				if( candidate.startsWith( optionName))
+					candidates.add( candidate);
 			if( candidates.isEmpty()) {
-				this.errors.add( new SyntaxException( Reason.UNKNOWN_OPTION, name));
-				return name;
+				this.errors.add( new UnknownOptionException( optionName));
+				return optionName;
 			}
 			if( candidates.size() > 1) {
-				this.errors.add( new SyntaxException( Reason.AMBIGUOUS, name));
-				return name;
+				this.errors.add( new AmbiguousOptionNameException( optionName));
+				return optionName;
 			}
 			return candidates.iterator().next();
 		}

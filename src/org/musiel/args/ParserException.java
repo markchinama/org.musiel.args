@@ -12,41 +12,90 @@
  */
 package org.musiel.args;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/**
- * Thrown on user errors during a parsing task, such as unknown options, missing options, unexpected option-arguments.
- * 
- * @author Bagana
- */
-public class ParserException extends Exception {
+public abstract class ParserException extends Exception {
 
-	private static final long serialVersionUID = 2574553544635903474L;
+	private static final long serialVersionUID = -5460417979261756353L;
 
-	private final String optionName;
-	private final Collection< String> additionalOptionNames;
+	private final boolean useResourceBundle;
 
-	public String getOptionName() {
-		return this.optionName;
+	private final String message;
+
+	private final String messageBundleBase;
+	private final String messageKey;
+	private final String[] messageParameters;
+
+	public ParserException( final String message) {
+		this.useResourceBundle = false;
+
+		this.message = message;
+
+		this.messageBundleBase = null;
+		this.messageKey = null;
+		this.messageParameters = null;
 	}
 
-	public Collection< String> getAdditionalOptionNames() {
-		return this.additionalOptionNames;
+	public ParserException( final String messageBundleBase, final String messageKey, final Object... messageParameters) {
+		this.useResourceBundle = true;
+
+		this.message = null;
+
+		this.messageBundleBase = messageBundleBase;
+		this.messageKey = messageKey;
+		this.messageParameters = new String[ messageParameters == null? 0: messageParameters.length];
+		for( int index = this.messageParameters.length - 1; index >= 0; --index)
+			this.messageParameters[ index] = messageParameters[ index] == null? "null": messageParameters[ index].toString();
 	}
 
-	public ParserException( final String message, final String optionName, final Collection< String> additionalOptionNames) {
-		super( message);
-		this.optionName = optionName;
-		this.additionalOptionNames =
-				additionalOptionNames == null? null: Collections.unmodifiableCollection( new LinkedList<>( additionalOptionNames));
+	@ Override
+	public String getMessage() {
+		return this.getMessage( Locale.getDefault());
 	}
 
-	protected static String optionNamesToString( final String main, final Collection< String> additional) {
-		final Collection< String> inParentheses = new LinkedHashSet<>( additional);
-		inParentheses.remove( main);
-		return inParentheses.isEmpty()? main: main + "(" + inParentheses.toString().substring( 1).replaceFirst( "\\]$", ")");
+	public String getMessage( final Locale locale) {
+		if( !this.useResourceBundle)
+			return this.message;
+		if( this.messageBundleBase == null || this.messageKey == null)
+			return null;
+		return ParserException.getMessageFromResourceBundle( this.messageBundleBase, locale, this.messageKey, this.messageParameters);
+	}
+
+	private static String getMessageFromResourceBundle( final String base, final Locale locale, final String key, final String... params) {
+		try {
+			final String template = ResourceBundle.getBundle( base, locale).getString( key);
+			return ParserException.substitute( template, params);
+		} catch( final MissingResourceException exception) {
+			final StringBuilder fallback = new StringBuilder().append( '<').append( base).append( ">.").append( key).append( '(');
+			for( int index = 0; index < params.length; ++index) {
+				if( index > 0)
+					fallback.append( ", ");
+				fallback.append( params[ index]);
+			}
+			return fallback.toString();
+		}
+	}
+
+	private static final Pattern SUBSTITUTION_POINT_PATTERN = Pattern.compile( "\\{[1-9]\\d*\\}");
+
+	private static String substitute( final String template, final String... params) {
+		final StringBuilder result = new StringBuilder();
+		final Matcher matcher = ParserException.SUBSTITUTION_POINT_PATTERN.matcher( template);
+		int matched;
+		for( matched = 0; matcher.find( matched); matched = matcher.end()) {
+			result.append( template, matched, matcher.start());
+			try {
+				final int index = Integer.parseInt( matcher.group().substring( 1, matcher.group().length() - 1)) - 1;
+				result.append( index >= 0 && index < params.length? params[ index]: matcher.group());
+			} catch( final NumberFormatException exception) {
+				result.append( matcher.group());
+			}
+		}
+		result.append( template, matched, template.length());
+		return result.toString();
 	}
 }

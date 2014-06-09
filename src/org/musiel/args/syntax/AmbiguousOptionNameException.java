@@ -10,15 +10,14 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.reflect;
+package org.musiel.args.syntax;
 
-import org.musiel.args.ParserException;
+public class AmbiguousOptionNameException extends OptionException {
 
-public class DecoderException extends ParserException {
+	private static final long serialVersionUID = -1006033348922155735L;
 
-	private static final long serialVersionUID = 8793986304834333618L;
-
-	public DecoderException( final String message) {
-		super( message, null, null);
+	public AmbiguousOptionNameException( final String optionName) {
+		super( optionName, AmbiguousOptionNameException.class.getPackage().getName() + ".exception", AmbiguousOptionNameException.class
+				.getSimpleName(), optionName);
 	}
 }
