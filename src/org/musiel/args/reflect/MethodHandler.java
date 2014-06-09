@@ -12,15 +12,20 @@
  */
 package org.musiel.args.reflect;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.DefaultAccessor;
 import org.musiel.args.operand.OperandPattern;
 import org.musiel.args.reflect.annotation.Argument;
+import org.musiel.args.reflect.annotation.ArgumentName;
+import org.musiel.args.reflect.annotation.Description;
 import org.musiel.args.reflect.annotation.Operands;
 import org.musiel.args.reflect.annotation.Option;
 import org.musiel.args.reflect.annotation.Repeatable;
@@ -29,25 +34,8 @@ import org.musiel.args.reflect.annotation.Required;
 abstract class MethodHandler {
 
 	public static MethodHandler forMethod( final Method method, final ReflectParser< ?> parser, final OperandPattern operandPattern) {
-		final Operands operands = method.getAnnotation( Operands.class);
-		final Option option = method.getAnnotation( Option.class);
-		if( operands != null) {
-			if( option != null)
-				throw new IllegalArgumentException( Option.class.getName() + " and " + Operands.class.getName() + " cannot coexist");
-			if( method.isAnnotationPresent( Required.class))
-				throw new IllegalArgumentException( "operand method cannot be annotated @" + Required.class.getSimpleName());
-			if( method.isAnnotationPresent( Repeatable.class))
-				throw new IllegalArgumentException( "operand method cannot be annotated @" + Repeatable.class.getSimpleName());
-			if( method.isAnnotationPresent( Argument.class))
-				throw new IllegalArgumentException( "operand method cannot be annotated @" + Argument.class.getSimpleName());
-
-			if( "".equals( operands.value()))
-				return new OperandsHandler( method, operandPattern);
-			if( operandPattern == null || !operandPattern.getNames().contains( operands.value()))
-				throw new IllegalArgumentException( "operand name \"" + operands.value() + "\" does not exist in the operand pattern");
-			return new OperandHandler( method, operands.value(), operandPattern);
-		} else
-			return new OptionHandler( method, parser);
+		return method.isAnnotationPresent( Operands.class)? AbstractOperandHandler.forMethod( method, operandPattern): new OptionHandler(
+				method, parser);
 	}
 
 	protected final Method method;
@@ -103,14 +91,14 @@ class OptionHandler extends MethodHandler {
 		super( method);
 
 		// names
-		String[] aliases;
+		String[] additionalNames;
 		final Option option = method.getAnnotation( Option.class);
 		if( option != null && option.value().length > 0) {
 			this.name = option.value()[ 0];
-			aliases = Arrays.copyOfRange( option.value(), 1, option.value().length);
+			additionalNames = Arrays.copyOfRange( option.value(), 1, option.value().length);
 		} else {
 			this.name = OptionHandler.constructName( method.getName());
-			aliases = new String[]{};
+			additionalNames = new String[]{};
 		}
 
 		// required
@@ -140,8 +128,17 @@ class OptionHandler extends MethodHandler {
 			else
 				OptionHandler.throwIllegalAnnotation( Argument.class, argumentAnnotation.value(), method);
 
+		// i18n
+		final String description = method.isAnnotationPresent( Description.class)? method.getAnnotation( Description.class).value(): null;
+		final String argumentName =
+				method.isAnnotationPresent( ArgumentName.class)? method.getAnnotation( ArgumentName.class).value(): null;
+
 		// register
-		parser.newOption( required, repeatable, argument, this.name, aliases);
+		parser.newOption( required, repeatable, argument, this.name, additionalNames);
+		if( description != null)
+			parser.setOptionDescription( this.name, description);
+		if( argumentName != null)
+			parser.setArgumentName( this.name, argumentName);
 	}
 
 	@ Override
@@ -151,6 +148,29 @@ class OptionHandler extends MethodHandler {
 }
 
 abstract class AbstractOperandHandler extends MethodHandler {
+
+	private static final Set< Class< ? extends Annotation>> CONFLICT_WITH_OPERANDS = new HashSet<>();
+	static {
+		AbstractOperandHandler.CONFLICT_WITH_OPERANDS.add( Argument.class);
+		AbstractOperandHandler.CONFLICT_WITH_OPERANDS.add( ArgumentName.class);
+		AbstractOperandHandler.CONFLICT_WITH_OPERANDS.add( Description.class);
+		AbstractOperandHandler.CONFLICT_WITH_OPERANDS.add( Option.class);
+		AbstractOperandHandler.CONFLICT_WITH_OPERANDS.add( Repeatable.class);
+		AbstractOperandHandler.CONFLICT_WITH_OPERANDS.add( Required.class);
+	}
+
+	public static MethodHandler forMethod( final Method method, final OperandPattern operandPattern) {
+		for( final Class< ? extends Annotation> conflictingAnnotations: AbstractOperandHandler.CONFLICT_WITH_OPERANDS)
+			if( method.isAnnotationPresent( conflictingAnnotations))
+				throw new IllegalArgumentException( "operand method cannot be annotated @" + conflictingAnnotations.getSimpleName());
+
+		final String operandName = method.getAnnotation( Operands.class).value();
+		if( "".equals( operandName))
+			return new OperandsHandler( method, operandPattern);
+		if( operandPattern == null || !operandPattern.getNames().contains( operandName))
+			throw new IllegalArgumentException( "operand name \"" + operandName + "\" does not exist in the operand pattern");
+		return new OperandHandler( method, operandName, operandPattern);
+	}
 
 	protected AbstractOperandHandler( final Method method, final boolean absentPossible, final boolean multiplePossible, final String name) {
 		super( method);

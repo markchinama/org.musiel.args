@@ -24,4 +24,6 @@ import java.lang.annotation.Target;
 public @ interface OperandPattern {
 
 	public String value();
+
+	public OperandName[] displayNames() default {};
 }

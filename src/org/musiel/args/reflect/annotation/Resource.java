@@ -10,13 +10,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.i18n;
+package org.musiel.args.reflect.annotation;
 
-import java.util.Locale;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface ResourceSet {
+@ Target( ElementType.TYPE)
+@ Retention( RetentionPolicy.RUNTIME)
+@ Inherited
+public @ interface Resource {
 
-	public Resource getDefaultResource();
-
-	public Resource getResource( Locale locale);
+	public String value();
 }

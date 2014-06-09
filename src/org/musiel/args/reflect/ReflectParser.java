@@ -29,14 +29,17 @@ import org.musiel.args.DefaultAccessor;
 import org.musiel.args.Option;
 import org.musiel.args.ParserException;
 import org.musiel.args.Result;
-import org.musiel.args.generic.AbstractParser;
 import org.musiel.args.generic.GenericAccessor;
+import org.musiel.args.generic.InternationalizedParser;
+import org.musiel.args.reflect.annotation.Description;
+import org.musiel.args.reflect.annotation.OperandName;
 import org.musiel.args.reflect.annotation.OperandPattern;
+import org.musiel.args.reflect.annotation.Resource;
 import org.musiel.args.syntax.GnuSyntax;
 import org.musiel.args.syntax.Syntax;
 import org.musiel.args.syntax.Syntax.SyntaxResult;
 
-public class ReflectParser< MODEL> extends AbstractParser< Result< MODEL>> {
+public class ReflectParser< MODEL> extends InternationalizedParser< Result< MODEL>> {
 
 	@ Override
 	public Option newOption( final String name, final String... aliases) {
@@ -53,20 +56,28 @@ public class ReflectParser< MODEL> extends AbstractParser< Result< MODEL>> {
 		this( new GnuSyntax(), resultType);
 	}
 
-	private final Class< MODEL> resultType;
+	private final Class< MODEL> model;
 	private final Map< Method, MethodHandler> methodHandlers = new HashMap<>();
 
-	public ReflectParser( final Syntax syntax, final Class< MODEL> resultType) {
+	public ReflectParser( final Syntax syntax, final Class< MODEL> model) {
 		super( syntax);
 
-		if( !resultType.isInterface())
-			throw new IllegalArgumentException( resultType.getName() + " is not an interface");
-		this.resultType = resultType;
+		if( !model.isInterface())
+			throw new IllegalArgumentException( model.getName() + " is not an interface");
+		this.model = model;
 
-		if( resultType.isAnnotationPresent( OperandPattern.class))
-			this.setOperandPattern( resultType.getAnnotation( OperandPattern.class).value());
+		if( model.isAnnotationPresent( OperandPattern.class)) {
+			final OperandPattern annotation = model.getAnnotation( OperandPattern.class);
+			this.setOperandPattern( annotation.value());
+			for( final OperandName name: annotation.displayNames())
+				this.setOperandName( name.name(), name.displayName());
+		}
+		if( model.isAnnotationPresent( Resource.class))
+			this.setBundleBase( model.getAnnotation( Resource.class).value());
+		if( model.isAnnotationPresent( Description.class))
+			this.setDescription( model.getAnnotation( Description.class).value());
 
-		for( final Method method: resultType.getMethods())
+		for( final Method method: model.getMethods())
 			if( !DefaultAccessor.class.equals( method.getDeclaringClass()))
 				this.methodHandlers.put( method, MethodHandler.forMethod( method, this, this.getOperandPatternMatcher()));
 	}
@@ -79,26 +90,25 @@ public class ReflectParser< MODEL> extends AbstractParser< Result< MODEL>> {
 		final Set< Method> decoded = new HashSet<>();
 		final Map< Method, Object> decodedValues = new HashMap<>();
 		final MODEL accessor =
-				this.resultType.cast( Proxy.newProxyInstance( this.resultType.getClassLoader(), new Class< ?>[]{ this.resultType},
-						new InvocationHandler() {
+				this.model.cast( Proxy.newProxyInstance( this.model.getClassLoader(), new Class< ?>[]{ this.model}, new InvocationHandler() {
 
-							@ Override
-							public Object invoke( final Object proxy, final Method method, final Object[] args) throws IllegalAccessException,
-									InvocationTargetException {
-								if( DefaultAccessor.class.equals( method.getDeclaringClass()))
-									return method.invoke( basicAccessor, args);
-								if( decoded.contains( method))
-									return decodedValues.get( method);
-								try {
-									final Object decodedValue = ReflectParser.this.methodHandlers.get( method).decode( basicAccessor);
-									decoded.add( method);
-									decodedValues.put( method, decodedValue);
-									return decodedValue;
-								} catch( final DecoderException exception) {
-									throw new UncheckedParserException( exception);
-								}
-							}
-						}));
+					@ Override
+					public Object invoke( final Object proxy, final Method method, final Object[] args) throws IllegalAccessException,
+							InvocationTargetException {
+						if( DefaultAccessor.class.equals( method.getDeclaringClass()))
+							return method.invoke( basicAccessor, args);
+						if( decoded.contains( method))
+							return decodedValues.get( method);
+						try {
+							final Object decodedValue = ReflectParser.this.methodHandlers.get( method).decode( basicAccessor);
+							decoded.add( method);
+							decodedValues.put( method, decodedValue);
+							return decodedValue;
+						} catch( final DecoderException exception) {
+							throw new UncheckedParserException( exception);
+						}
+					}
+				}));
 
 		return new Result< MODEL>() {
 

@@ -43,7 +43,7 @@ public abstract class AbstractParser< RESULT extends Result< ?>> implements Pars
 
 	private final Syntax syntax;
 
-	public AbstractParser( final Syntax syntax) {
+	protected AbstractParser( final Syntax syntax) {
 		this.syntax = syntax;
 		if( this.syntax == null)
 			throw new NullPointerException();

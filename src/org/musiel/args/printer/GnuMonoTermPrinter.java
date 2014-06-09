@@ -14,9 +14,10 @@ package org.musiel.args.printer;
 
 import java.io.PrintStream;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.musiel.args.Option;
 import org.musiel.args.Parser;
@@ -43,6 +44,7 @@ public class GnuMonoTermPrinter implements HelpMessagePrinter {
 		this.printer = new MonoTermPrinter( out, margin, cursor);
 	}
 
+	private static final String DEFAULT_ARGUMENT_NAME = "ARG";
 	private static final Resource DUMMY_RESOURCE = new Resource() {
 
 		@ Override
@@ -52,7 +54,7 @@ public class GnuMonoTermPrinter implements HelpMessagePrinter {
 
 		@ Override
 		public String getArgumentName( final String optionName) {
-			return "ARG";
+			return GnuMonoTermPrinter.DEFAULT_ARGUMENT_NAME;
 		}
 
 		@ Override
@@ -73,21 +75,20 @@ public class GnuMonoTermPrinter implements HelpMessagePrinter {
 
 	@ Override
 	public void print( final String commandName, final Parser< ?> parser, final ResourceSet resourceSet) {
-		this.print( commandName, parser, resourceSet.getResource( Locale.getDefault()));
+		this.print( commandName, parser, resourceSet.getDefaultResource());
 	}
 
 	private static final int BASE_INDENT = 0;
 	private static final int SECTION_INDENT = 2;
 	private static final int WRAP_INDENT = 6;
+	private static final int OPTION_SPACE = 2;
 
 	@ Override
 	public void print( final String commandName, final Parser< ?> parser, final Resource resource) {
 		// USAGE
 		final StringBuilder headline = new StringBuilder().append( commandName);
-		final String optionPart = this.constructOptionList( parser, resource);
-		headline.append( optionPart.length() <= Integer.MAX_VALUE? optionPart: " [OPTIONS]"); // TODO
-		if( parser.getOperandPattern() != null)
-			headline.append( ' ').append( parser.getOperandPattern());
+		headline.append( this.constructOptionPart( parser, resource));
+		headline.append( this.constructOperandPart( parser, resource));
 		this.printer.println( GnuMonoTermPrinter.BASE_INDENT);
 		this.printer.print( "USAGE", GnuMonoTermPrinter.BASE_INDENT);
 		this.printer.println( GnuMonoTermPrinter.BASE_INDENT);
@@ -126,7 +127,7 @@ public class GnuMonoTermPrinter implements HelpMessagePrinter {
 				options.put( optionHead, optionDesc == null? "": optionDesc);
 			}
 			final int longestHead = shortOptionFound? longestHeadWithIndent: longestHeadWithoutIndent;
-			final int descIndent = longestHead + 2;
+			final int descIndent = GnuMonoTermPrinter.SECTION_INDENT + longestHead + GnuMonoTermPrinter.OPTION_SPACE;
 
 			this.printer.println( GnuMonoTermPrinter.BASE_INDENT);
 			this.printer.print( "OPTIONS", GnuMonoTermPrinter.BASE_INDENT);
@@ -143,7 +144,7 @@ public class GnuMonoTermPrinter implements HelpMessagePrinter {
 		}
 	}
 
-	private String constructOptionList( final Parser< ?> parser, final Resource resource) {
+	private String constructOptionPart( final Parser< ?> parser, final Resource resource) {
 		final StringBuilder builder = new StringBuilder();
 		for( final Option option: parser.getOptions()) {
 			builder.append( ' ');
@@ -157,7 +158,8 @@ public class GnuMonoTermPrinter implements HelpMessagePrinter {
 					builder.append( "[=");
 				else
 					builder.append( '[');
-				builder.append( resource.getArgumentName( option.getName()));
+				final String argumentName = resource.getArgumentName( option.getName());
+				builder.append( argumentName != null? argumentName: GnuMonoTermPrinter.DEFAULT_ARGUMENT_NAME);
 				if( !option.getArgumentPolicy().isRequired())
 					builder.append( ']');
 			}
@@ -165,6 +167,31 @@ public class GnuMonoTermPrinter implements HelpMessagePrinter {
 				builder.append( ']');
 			if( option.isRepeatable())
 				builder.append( "...");
+		}
+		return builder.toString();
+	}
+
+	// IMPORTANT: OperandPattern is using a related pattern, any future change should be done in both classes
+	private static final Pattern NAME_OR_NOT_NAME = Pattern.compile( "^(?:([a-zA-Z\\-0-9]+)|([\\[\\]\\.\\(\\)\\|\\s]+))");
+
+	private Object constructOperandPart( final Parser< ?> parser, final Resource resource) {
+		final String pattern = parser.getOperandPattern();
+		if( pattern == null || "".equals( pattern.trim()))
+			return "";
+
+		final StringBuilder builder = new StringBuilder().append( ' ');
+		Matcher matcher;
+		for( CharSequence remaining = pattern.trim(); remaining.length() > 0; remaining =
+				remaining.subSequence( matcher.group().length(), remaining.length())) {
+			matcher = GnuMonoTermPrinter.NAME_OR_NOT_NAME.matcher( remaining);
+			if( !matcher.find())
+				throw new IllegalArgumentException( "invalid pattern: " + pattern);
+			if( matcher.group( 1) == null)
+				builder.append( matcher.group( 2));
+			else {
+				final String name = resource.getOperandName( matcher.group( 1));
+				builder.append( name != null? name: matcher.group( 1));
+			}
 		}
 		return builder.toString();
 	}
@@ -185,7 +212,8 @@ public class GnuMonoTermPrinter implements HelpMessagePrinter {
 				builder.append( "[=");
 			else
 				builder.append( '[');
-			builder.append( resource.getArgumentName( option.getName()));
+			final String argumentName = resource.getArgumentName( option.getName());
+			builder.append( argumentName != null? argumentName: GnuMonoTermPrinter.DEFAULT_ARGUMENT_NAME);
 			if( !option.getArgumentPolicy().isRequired())
 				builder.append( ']');
 		}
