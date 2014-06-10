@@ -14,7 +14,7 @@ package org.musiel.args.operand;
 
 import org.musiel.args.ArgumentException;
 
-public class OperandPatternException extends ArgumentException {
+public class OperandException extends ArgumentException {
 
 	private static final long serialVersionUID = 8158165952327548121L;
 
@@ -28,8 +28,8 @@ public class OperandPatternException extends ArgumentException {
 		return this.reason;
 	}
 
-	public OperandPatternException( final Reason reason) {
-		super( OperandPatternException.class.getPackage().getName() + ".exception", OperandPatternException.class.getName() + "."
+	public OperandException( final Reason reason) {
+		super( OperandException.class.getPackage().getName() + ".exception", OperandException.class.getName() + "."
 				+ reason.name());
 		this.reason = reason;
 	}

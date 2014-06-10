@@ -21,7 +21,7 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.musiel.args.operand.OperandPatternException.Reason;
+import org.musiel.args.operand.OperandException.Reason;
 
 public class OperandPatternTest {
 
@@ -99,7 +99,7 @@ public class OperandPatternTest {
 	}
 
 	@ Test
-	public void testMatching() throws OperandPatternException {
+	public void testMatching() throws OperandException {
 		try {
 			OperandPattern.compile( OperandPatternTest.PATTERNS[ 3]).match( "a", "b", "d");
 			Assert.fail();
@@ -109,14 +109,14 @@ public class OperandPatternTest {
 		try {
 			OperandPattern.compile( OperandPatternTest.PATTERNS[ 2]).match( "a", "b", "c");
 			Assert.fail();
-		} catch( final OperandPatternException exception) {
+		} catch( final OperandException exception) {
 			Assert.assertEquals( Reason.TOO_MANY, exception.getReason());
 		}
 
 		try {
 			OperandPattern.compile( OperandPatternTest.PATTERNS[ 2]).match( "a");
 			Assert.fail();
-		} catch( final OperandPatternException exception) {
+		} catch( final OperandException exception) {
 			Assert.assertEquals( Reason.TOO_FEW, exception.getReason());
 		}
 

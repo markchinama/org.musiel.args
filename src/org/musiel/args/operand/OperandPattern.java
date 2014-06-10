@@ -29,7 +29,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.musiel.args.operand.OperandPatternException.Reason;
+import org.musiel.args.operand.OperandException.Reason;
 
 public class OperandPattern {
 
@@ -410,13 +410,13 @@ public class OperandPattern {
 		return result;
 	}
 
-	public Map< String, List< String>> match( final String... operands) throws OperandPatternException {
+	public Map< String, List< String>> match( final String... operands) throws OperandException {
 		final List< String> list = new LinkedList<>();
 		Collections.addAll( list, operands);
 		return this.match( list);
 	}
 
-	public Map< String, List< String>> match( final List< String> operands) throws OperandPatternException {
+	public Map< String, List< String>> match( final List< String> operands) throws OperandException {
 		List< Explorer> explorers = new LinkedList<>();
 		explorers.add( new Explorer( new String[ 0], this.initialState));
 		for( int i = 0; i < operands.size(); ++i) {
@@ -430,7 +430,7 @@ public class OperandPattern {
 			explorers = updatedExplorers;
 
 			if( explorers.isEmpty())
-				throw new OperandPatternException( Reason.TOO_MANY);
+				throw new OperandException( Reason.TOO_MANY);
 		}
 
 		final Set< String[]> haltingPaths = new HashSet<>();
@@ -438,7 +438,7 @@ public class OperandPattern {
 			if( explorer.state.finalState)
 				haltingPaths.add( explorer.path);
 		if( haltingPaths.isEmpty())
-			throw new OperandPatternException( Reason.TOO_FEW);
+			throw new OperandException( Reason.TOO_FEW);
 		if( haltingPaths.size() > 1)
 			throw new IllegalStateException( "the pattern is ambiguous, should not be used for matching");
 		final String[] path = haltingPaths.iterator().next();

@@ -26,7 +26,8 @@ import org.musiel.args.ArgumentException;
 import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.DefaultAccessor;
 import org.musiel.args.operand.OperandPattern;
-import org.musiel.args.operand.OperandPatternException;
+import org.musiel.args.operand.OperandException;
+import org.musiel.args.reflect.ValueException.OptionOrOperand;
 import org.musiel.args.reflect.annotation.Argument;
 import org.musiel.args.reflect.annotation.ArgumentName;
 import org.musiel.args.reflect.annotation.Description;
@@ -161,8 +162,8 @@ class OptionHandler extends MethodHandler {
 			throw new FutureException( possibleCauses);
 		} catch( final ReturnValueConstructionException exception) {
 			final List< String> names = result.getNames( this.name);
-			throw new FutureException( new IllegalOptionArgumentException( names.get( exception.getIndex()), arguments.get( exception
-					.getIndex()), exception.getCause()));
+			throw new FutureException( new ValueException( OptionOrOperand.OPTION, names.get( exception.getIndex()),
+					arguments.get( exception.getIndex()), exception.getCause()));
 		}
 	}
 }
@@ -225,11 +226,11 @@ class OperandHandler extends AbstractOperandHandler {
 		} catch( final PreconditionException exception) {
 			final Collection< ArgumentException> possibleCauses = new LinkedList<>();
 			for( final ArgumentException parseTimeException: parseTimeExceptions)
-				if( parseTimeException instanceof OperandPatternException)
+				if( parseTimeException instanceof OperandException)
 					possibleCauses.add( parseTimeException);
 			throw new FutureException( possibleCauses);
 		} catch( final ReturnValueConstructionException exception) {
-			throw new FutureException( new IllegalOperandValueException( this.name, operands.get( exception.getIndex()),
+			throw new FutureException( new ValueException( OptionOrOperand.OPERAND, this.name, operands.get( exception.getIndex()),
 					exception.getCause()));
 		}
 	}
@@ -250,11 +251,11 @@ class OperandsHandler extends AbstractOperandHandler {
 		} catch( final PreconditionException exception) {
 			final Collection< ArgumentException> possibleCauses = new LinkedList<>();
 			for( final ArgumentException parseTimeException: parseTimeExceptions)
-				if( parseTimeException instanceof OperandPatternException)
+				if( parseTimeException instanceof OperandException)
 					possibleCauses.add( parseTimeException);
 			throw new FutureException( possibleCauses);
 		} catch( final ReturnValueConstructionException exception) {
-			throw new FutureException( new IllegalOperandValueException( operands.get( exception.getIndex()), exception.getCause()));
+			throw new FutureException( new ValueException( operands.get( exception.getIndex()), exception.getCause()));
 		}
 	}
 }

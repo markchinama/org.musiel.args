@@ -28,7 +28,7 @@ import org.musiel.args.Option;
 import org.musiel.args.Parser;
 import org.musiel.args.Result;
 import org.musiel.args.operand.OperandPattern;
-import org.musiel.args.operand.OperandPatternException;
+import org.musiel.args.operand.OperandException;
 import org.musiel.args.syntax.Syntax;
 import org.musiel.args.syntax.Syntax.SyntaxResult;
 
@@ -150,7 +150,7 @@ public abstract class AbstractParser< RESULT extends Result< ?>> implements Pars
 		Map< String, List< String>> operandMap = null;
 		try {
 			operandMap = this.operandPattern == null? null: this.operandPattern.match( syntaxResult.getOperands());
-		} catch( final OperandPatternException exception) {
+		} catch( final OperandException exception) {
 			exceptions.add( exception);
 		}
 
