@@ -17,7 +17,6 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 
 import org.musiel.args.Option;
-import org.musiel.args.SyntaxException;
 
 /**
  * A {@link Syntax} implementation compliant with the GNU <a
@@ -110,19 +109,17 @@ public class GnuSyntax extends PosixSyntax {
 		}
 
 		@ Override
-		protected void handleOption( final String arg) throws SyntaxException {
+		protected void handleOption( final String arg) {
 			if( arg.startsWith( "--"))
 				this.handleLongOption( arg);
 			else
 				super.handleOption( arg);
 		}
 
-		private void handleLongOption( final String arg) throws IllegalOptionNameException {
+		private void handleLongOption( final String arg) {
 			final int equalPos = arg.indexOf( '=');
 			String optionName = equalPos < 0? arg: arg.substring( 0, equalPos); // "--" is possible here
 			final String argument = equalPos < 0? null: arg.substring( equalPos + 1);
-			if( !GnuSyntax.this.isValidName( optionName))
-				throw new IllegalOptionNameException( optionName);
 			if( !this.operands.isEmpty() && !GnuSyntax.this.isLateOptionsAllowed())
 				this.errors.add( new LateOptionException( optionName));
 

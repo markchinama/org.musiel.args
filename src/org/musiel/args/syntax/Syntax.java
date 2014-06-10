@@ -18,7 +18,6 @@ import java.util.Set;
 
 import org.musiel.args.ArgumentException;
 import org.musiel.args.Option;
-import org.musiel.args.SyntaxException;
 
 /**
  * Many different kinds of syntax for command line arguments exist out there, a programmer may prefer one over another, or may want
@@ -48,9 +47,8 @@ public interface Syntax {
 	 * @param options
 	 * @param args
 	 * @return
-	 * @throws SyntaxException
 	 */
-	public SyntaxResult parse( Set< Option> options, String... args) throws SyntaxException;
+	public SyntaxResult parse( Set< Option> options, String... args);
 
 	/**
 	 * The result of a parsing process.

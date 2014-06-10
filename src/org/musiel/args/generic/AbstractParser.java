@@ -27,7 +27,6 @@ import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.Option;
 import org.musiel.args.Parser;
 import org.musiel.args.Result;
-import org.musiel.args.SyntaxException;
 import org.musiel.args.operand.OperandPattern;
 import org.musiel.args.operand.OperandPatternException;
 import org.musiel.args.syntax.Syntax;
@@ -127,14 +126,14 @@ public abstract class AbstractParser< RESULT extends Result< ?>> implements Pars
 	}
 
 	@ Override
-	public RESULT parse( final String[] args, final int offset) throws SyntaxException {
+	public RESULT parse( final String[] args, final int offset) {
 		if( offset < 0 || offset >= args.length)
 			throw new ArrayIndexOutOfBoundsException( offset);
 		return this.parse( args, offset, args.length - offset);
 	}
 
 	@ Override
-	public RESULT parse( final String[] args, final int offset, final int length) throws SyntaxException {
+	public RESULT parse( final String[] args, final int offset, final int length) {
 		if( offset < 0 || offset >= args.length)
 			throw new ArrayIndexOutOfBoundsException( offset);
 		if( length < 0)
@@ -145,7 +144,7 @@ public abstract class AbstractParser< RESULT extends Result< ?>> implements Pars
 	}
 
 	@ Override
-	public RESULT parse( final String... args) throws SyntaxException {
+	public RESULT parse( final String... args) {
 		final SyntaxResult syntaxResult = this.syntax.parse( Collections.unmodifiableSet( this.options), args);
 		final Collection< ArgumentException> exceptions = new LinkedList< ArgumentException>( syntaxResult.getErrors());
 		Map< String, List< String>> operandMap = null;

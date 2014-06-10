@@ -16,7 +16,6 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.musiel.args.Option;
-import org.musiel.args.SyntaxException;
 
 /**
  * A {@link Syntax} implementation compliant with the <a
@@ -103,7 +102,7 @@ public class PosixSyntax implements Syntax {
 	}
 
 	@ Override
-	public SyntaxResult parse( final Set< Option> options, final String... args) throws SyntaxException {
+	public SyntaxResult parse( final Set< Option> options, final String... args) {
 		final PosixMachine machine = this.newMachine( options);
 		for( final String arg: args)
 			machine.feed( arg);
@@ -130,7 +129,7 @@ public class PosixSyntax implements Syntax {
 		protected String openOptionName = null;
 		protected Option openOption = null;
 
-		private void feed( final String arg) throws SyntaxException {
+		private void feed( final String arg) {
 			if( this.optionTerminatedByDoubleHyphen) {
 				this.operands.add( arg);
 				return;
@@ -157,15 +156,12 @@ public class PosixSyntax implements Syntax {
 		}
 
 		// specially prepared for GNU and those support different types of options...
-		protected void handleOption( final String arg) throws SyntaxException {
+		protected void handleOption( final String arg) {
 			this.handleShortOption( arg, arg);
 		}
 
-		protected void handleShortOption( final String arg, final String originalWholeArg) throws SyntaxException {
+		protected void handleShortOption( final String arg, final String originalWholeArg) {
 			final String optionName = arg.substring( 0, 2); // long enough always
-			if( !PosixSyntax.this.isValidName( optionName))
-				throw new IllegalOptionNameException( optionName);
-
 			final Option option = this.optionDictionary.get( optionName);
 			if( option == null)
 				this.errors.add( new UnknownOptionException( optionName));

@@ -17,7 +17,6 @@ import java.io.File;
 import org.junit.Assert;
 import org.junit.Test;
 import org.musiel.args.DefaultAccessor;
-import org.musiel.args.ParserException;
 import org.musiel.args.Result;
 import org.musiel.args.generic.AbstractParser;
 import org.musiel.args.generic.AbstractParserTest;
@@ -47,7 +46,7 @@ public class ReflectParserTest extends AbstractParserTest {
 	}
 
 	@ Test
-	public void emptyInterfacePasses() throws ParserException {
+	public void emptyInterfacePasses() {
 		new ReflectParser<>( EmptyInterface.class).parse();
 	}
 
@@ -92,7 +91,7 @@ public class ReflectParserTest extends AbstractParserTest {
 	}
 
 	@ Test
-	public void test() throws ParserException {
+	public void test() {
 		final Options options =
 				ReflectParser.parse( Options.class, "--help", "input", "output", "--index", "3", "--index", "9").getAccessor();
 		Assert.assertTrue( options.help());

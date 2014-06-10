@@ -19,7 +19,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.DefaultAccessor;
-import org.musiel.args.ParserException;
 import org.musiel.args.Result;
 
 public abstract class AbstractParserTest {
@@ -63,17 +62,17 @@ public abstract class AbstractParserTest {
 	}
 
 	@ Test( expected = ArrayIndexOutOfBoundsException.class)
-	public void outOfRange() throws ParserException {
+	public void outOfRange() {
 		this.parser.parse( new String[]{ "-!!==", "-a", "file1"}, 4);
 	}
 
 	@ Test( expected = ArrayIndexOutOfBoundsException.class)
-	public void outOfRange2() throws ParserException {
+	public void outOfRange2() {
 		this.parser.parse( new String[]{ "-!!==", "-a", "file1"}, 1, 3);
 	}
 
 	@ Test
-	public void normalPath() throws ParserException {
+	public void normalPath() {
 		DefaultAccessor result = this.parser.parse( new String[]{ "-!!==", "-a", "file1"}, 1).getAccessor();
 		Assert.assertArrayEquals( new String[]{ "file1"}, result.getOperands().toArray());
 		result = this.parser.parse( new String[]{ "-!!==", "-a", "file1", "wontsee", null}, 1, 2).getAccessor();

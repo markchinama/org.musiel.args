@@ -29,7 +29,6 @@ import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.DefaultAccessor;
 import org.musiel.args.Option;
 import org.musiel.args.Result;
-import org.musiel.args.SyntaxException;
 import org.musiel.args.generic.AbstractResult;
 import org.musiel.args.generic.GenericAccessor;
 import org.musiel.args.generic.InternationalizedParser;
@@ -115,12 +114,11 @@ public class ReflectParser< MODEL> extends InternationalizedParser< Result< MODE
 				})));
 	}
 
-	public static < MODEL>Result< MODEL> parse( final Syntax syntax, final Class< MODEL> resultType, final String... args)
-			throws SyntaxException {
+	public static < MODEL>Result< MODEL> parse( final Syntax syntax, final Class< MODEL> resultType, final String... args) {
 		return new ReflectParser< MODEL>( syntax, resultType).parse( args);
 	}
 
-	public static < MODEL>Result< MODEL> parse( final Class< MODEL> resultType, final String... args) throws SyntaxException {
+	public static < MODEL>Result< MODEL> parse( final Class< MODEL> resultType, final String... args) {
 		return new ReflectParser< MODEL>( resultType).parse( args);
 	}
 }
