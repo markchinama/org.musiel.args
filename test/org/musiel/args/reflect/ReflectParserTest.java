@@ -20,9 +20,10 @@ import org.musiel.args.DefaultAccessor;
 import org.musiel.args.Result;
 import org.musiel.args.generic.AbstractParser;
 import org.musiel.args.generic.AbstractParserTest;
-import org.musiel.args.reflect.annotation.OperandPattern;
-import org.musiel.args.reflect.annotation.Operands;
-import org.musiel.args.reflect.annotation.Option;
+import org.musiel.args.reflect.OperandPattern;
+import org.musiel.args.reflect.Operands;
+import org.musiel.args.reflect.Option;
+import org.musiel.args.reflect.ReflectParser;
 
 public class ReflectParserTest extends AbstractParserTest {
 

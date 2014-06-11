@@ -19,45 +19,49 @@ public interface DefaultAccessor {
 	/**
 	 * Returns whether an option occurred at least once.
 	 * 
-	 * @param option
+	 * @param optionName
 	 * @return
 	 */
-	public boolean isOccurred( String option);
+	public boolean isOccurred( String optionName);
 
 	/**
 	 * Returns how many times an option occurred.
 	 * 
-	 * @param option
+	 * @param optionName
 	 * @return
 	 */
-	public int getOccurrences( String option);
+	public int getOccurrences( String optionName);
 
 	/**
 	 * Returns the option names used for an option, in the order they occurred.
 	 * 
-	 * @param option
+	 * @param optionName
 	 * @return
 	 */
-	public List< String> getNames( String option);
+	public List< String> getNames( String optionName);
 
-	public String getName( String option);
+	public String[] getNamesAsArray( String optionName);
+
+	public String getName( String optionName);
 
 	/**
 	 * Returns the option-arguments of an option, in the order they occurred. Occurrences without arguments produce <code>null</code>s.
 	 * 
-	 * @param option
+	 * @param optionName
 	 * @return
 	 */
-	public List< String> getArguments( String option);
+	public List< String> getArguments( String optionName);
+
+	public String[] getArgumentsAsArray( String optionName);
 
 	/**
 	 * Returns the option-argument in the only occurrence of an option, or <code>null</code> if the option never occurred, or not with an
 	 * argument.
 	 * 
-	 * @param option
+	 * @param optionName
 	 * @return
 	 */
-	public String getArgument( String option);
+	public String getArgument( String optionName);
 
 	/**
 	 * Returns all operands.
@@ -66,7 +70,11 @@ public interface DefaultAccessor {
 	 */
 	public List< String> getOperands();
 
+	public String[] getOperandsAsArray();
+
 	public List< String> getOperands( String operandName);
+
+	public String[] getOperandsAsArray( String operandName);
 
 	public String getOperand( String operandName);
 }

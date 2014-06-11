@@ -27,8 +27,8 @@ import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.Option;
 import org.musiel.args.Parser;
 import org.musiel.args.Result;
-import org.musiel.args.operand.OperandPattern;
 import org.musiel.args.operand.OperandException;
+import org.musiel.args.operand.OperandPattern;
 import org.musiel.args.syntax.Syntax;
 import org.musiel.args.syntax.Syntax.SyntaxResult;
 
@@ -152,11 +152,12 @@ public abstract class AbstractParser< RESULT extends Result< ?>> implements Pars
 			operandMap = this.operandPattern == null? null: this.operandPattern.match( syntaxResult.getOperands());
 		} catch( final OperandException exception) {
 			exceptions.add( exception);
+			operandMap = new TreeMap<>();
 		}
 
 		return this.adapt( syntaxResult, operandMap, Collections.unmodifiableCollection( exceptions));
 	}
 
-	protected abstract RESULT adapt( SyntaxResult syntaxResult, Map< String, ? extends List< String>> operands,
+	protected abstract RESULT adapt( SyntaxResult syntaxResult, Map< String, List< String>> operands,
 			Collection< ? extends ArgumentException> exceptions);
 }

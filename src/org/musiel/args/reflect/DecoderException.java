@@ -10,23 +10,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.reflect.annotation;
+package org.musiel.args.reflect;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.musiel.args.ArgumentException;
 
-@ Target( ElementType.METHOD)
-@ Retention( RetentionPolicy.RUNTIME)
-@ Inherited
-public @ interface Required {
+public class DecoderException extends ArgumentException {
 
-	/**
-	 * Whether the option is required.
-	 * 
-	 * @return
-	 */
-	public boolean value() default true;
+	private static final long serialVersionUID = 7996264514095528394L;
+
+	public DecoderException( final String message) {
+		super( message);
+	}
+
+	public DecoderException( final String messageBundleBase, final String messageKey, final Object... messageParameters) {
+		super( messageBundleBase, messageKey, messageParameters);
+	}
 }

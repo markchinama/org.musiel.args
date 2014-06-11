@@ -81,6 +81,7 @@ public class ArgumentException extends Exception {
 					fallback.append( ", ");
 				fallback.append( params[ index]);
 			}
+			fallback.append( ')');
 			return fallback.toString();
 		}
 	}

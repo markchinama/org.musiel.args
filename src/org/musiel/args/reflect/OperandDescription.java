@@ -12,27 +12,17 @@
  */
 package org.musiel.args.reflect;
 
-import org.musiel.args.decoder.DecoderException;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-class ReturnValueConstructionException extends Exception {
+@ Target( {})
+@ Retention( RetentionPolicy.RUNTIME)
+@ Inherited
+public @ interface OperandDescription {
 
-	private static final long serialVersionUID = -876782689388935256L;
+	public String name();
 
-	private final int index;
-	private final DecoderException cause;
-
-	public int getIndex() {
-		return this.index;
-	}
-
-	@ Override
-	public DecoderException getCause() {
-		return this.cause;
-	}
-
-	public ReturnValueConstructionException( final int index, final DecoderException cause) {
-		super( cause.getMessage(), cause);
-		this.index = index;
-		this.cause = cause;
-	}
+	public String description();
 }

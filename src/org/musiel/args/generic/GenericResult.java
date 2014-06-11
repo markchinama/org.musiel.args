@@ -13,10 +13,12 @@
 package org.musiel.args.generic;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.musiel.args.ArgumentException;
+import org.musiel.args.ArgumentExceptions;
 import org.musiel.args.Result;
 import org.musiel.args.syntax.Syntax.SyntaxResult;
 
@@ -24,7 +26,7 @@ public class GenericResult extends GenericAccessor implements Result< GenericRes
 
 	private final Collection< ? extends ArgumentException> exceptions;
 
-	public GenericResult( final SyntaxResult syntaxResult, final Map< String, ? extends List< String>> operandMap,
+	public GenericResult( final SyntaxResult syntaxResult, final Map< String, List< String>> operandMap,
 			final Collection< ? extends ArgumentException> exceptions) {
 		super( syntaxResult, operandMap);
 		this.exceptions = exceptions;
@@ -36,24 +38,32 @@ public class GenericResult extends GenericAccessor implements Result< GenericRes
 	}
 
 	@ Override
-	public GenericResult check( final Collection< Class< ? extends ArgumentException>> exceptionTypes) throws ArgumentException {
+	public GenericResult check( final Collection< Class< ? extends ArgumentException>> exceptionTypes) throws ArgumentExceptions {
+		final LinkedList< ArgumentException> exceptions = new LinkedList<>();
 		for( final Class< ? extends ArgumentException> exceptionType: exceptionTypes)
-			this.check( exceptionType);
+			for( final ArgumentException exception: this.exceptions)
+				if( exceptionType.isInstance( exception))
+					exceptions.add( exception);
+		if( !exceptions.isEmpty())
+			throw new ArgumentExceptions( exceptions);
 		return this;
 	}
 
 	@ Override
-	public GenericResult check( final Class< ? extends ArgumentException> exceptionType) throws ArgumentException {
+	public GenericResult check( final Class< ? extends ArgumentException> exceptionType) throws ArgumentExceptions {
+		final LinkedList< ArgumentException> exceptions = new LinkedList<>();
 		for( final ArgumentException exception: this.exceptions)
 			if( exceptionType.isInstance( exception))
-				throw exception;
+				exceptions.add( exception);
+		if( !exceptions.isEmpty())
+			throw new ArgumentExceptions( exceptions);
 		return this;
 	}
 
 	@ Override
-	public GenericResult check() throws ArgumentException {
+	public GenericResult check() throws ArgumentExceptions {
 		if( !this.exceptions.isEmpty())
-			throw this.exceptions.iterator().next();
+			throw new ArgumentExceptions( this.exceptions);
 		return this;
 	}
 

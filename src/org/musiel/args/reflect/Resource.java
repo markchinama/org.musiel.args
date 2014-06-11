@@ -10,13 +10,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.decoder;
+package org.musiel.args.reflect;
 
-public class DecoderException extends Exception {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-	private static final long serialVersionUID = 7996264514095528394L;
+@ Target( ElementType.TYPE)
+@ Retention( RetentionPolicy.RUNTIME)
+@ Inherited
+public @ interface Resource {
 
-	public DecoderException( final String message) {
-		super( message);
-	}
+	public String value();
 }

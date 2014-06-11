@@ -50,7 +50,7 @@ public class GenericParser extends AbstractParser< GenericResult> {
 	}
 
 	@ Override
-	protected GenericResult adapt( final SyntaxResult syntaxResult, final Map< String, ? extends List< String>> operands,
+	protected GenericResult adapt( final SyntaxResult syntaxResult, final Map< String, List< String>> operands,
 			final Collection< ? extends ArgumentException> exceptions) {
 		return new GenericResult( syntaxResult, operands, exceptions);
 	}

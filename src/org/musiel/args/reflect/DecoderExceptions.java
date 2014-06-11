@@ -10,19 +10,26 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args;
+package org.musiel.args.reflect;
 
 import java.util.Collection;
+import java.util.LinkedList;
 
-public interface Result< ACCESSOR> {
+class DecoderExceptions extends Exception {
 
-	public Collection< ? extends ArgumentException> getErrors();
+	private static final long serialVersionUID = -2526882939402478634L;
 
-	public Result< ACCESSOR> check( Collection< Class< ? extends ArgumentException>> exceptionTypes) throws ArgumentExceptions;
+	private final Collection< DecoderException> decoderExceptions = new LinkedList<>();
 
-	public Result< ACCESSOR> check( Class< ? extends ArgumentException> exceptionType) throws ArgumentExceptions;
+	public Collection< DecoderException> getDecoderExceptions() {
+		return this.decoderExceptions;
+	}
 
-	public ACCESSOR check() throws ArgumentExceptions;
+	public DecoderExceptions( final DecoderException exception) {
+		this.decoderExceptions.add( exception);
+	}
 
-	public ACCESSOR getAccessor();
+	public DecoderExceptions( final Collection< ? extends DecoderException> exceptions) {
+		this.decoderExceptions.addAll( exceptions);
+	}
 }

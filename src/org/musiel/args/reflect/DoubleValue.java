@@ -10,17 +10,34 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.reflect.annotation;
+package org.musiel.args.reflect;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.math.BigDecimal;
 
-@ Target( {})
 @ Retention( RetentionPolicy.RUNTIME)
-public @ interface OperandName {
+@ Target( ElementType.METHOD)
+@ Inherited
+@ DecoderAnnotation( DoubleValue.Decoder.class)
+public @ interface DoubleValue {
 
-	public String name();
+	static class Decoder extends FloatNumberDecoder< Double> {
 
-	public String displayName();
+		public Decoder( final DoubleValue annotation) {
+			this();
+		}
+
+		public Decoder() {
+			super();
+		}
+
+		@ Override
+		protected Double cast( final BigDecimal decoded) {
+			return Double.valueOf( decoded.doubleValue());
+		}
+	}
 }

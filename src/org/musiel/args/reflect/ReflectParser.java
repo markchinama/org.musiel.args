@@ -32,10 +32,6 @@ import org.musiel.args.Result;
 import org.musiel.args.generic.AbstractResult;
 import org.musiel.args.generic.GenericAccessor;
 import org.musiel.args.generic.InternationalizedParser;
-import org.musiel.args.reflect.annotation.Description;
-import org.musiel.args.reflect.annotation.OperandName;
-import org.musiel.args.reflect.annotation.OperandPattern;
-import org.musiel.args.reflect.annotation.Resource;
 import org.musiel.args.syntax.GnuSyntax;
 import org.musiel.args.syntax.Syntax;
 import org.musiel.args.syntax.Syntax.SyntaxResult;
@@ -70,8 +66,8 @@ public class ReflectParser< MODEL> extends InternationalizedParser< Result< MODE
 		if( model.isAnnotationPresent( OperandPattern.class)) {
 			final OperandPattern annotation = model.getAnnotation( OperandPattern.class);
 			this.setOperandPattern( annotation.value());
-			for( final OperandName name: annotation.displayNames())
-				this.setOperandName( name.name(), name.displayName());
+			for( final OperandDescription description: annotation.descriptions())
+				this.setOperandDescription( description.name(), description.description());
 		}
 		if( model.isAnnotationPresent( Resource.class))
 			this.setBundleBase( model.getAnnotation( Resource.class).value());
@@ -80,23 +76,26 @@ public class ReflectParser< MODEL> extends InternationalizedParser< Result< MODE
 
 		for( final Method method: model.getMethods())
 			if( !DefaultAccessor.class.equals( method.getDeclaringClass()))
-				this.methodHandlers.put( method, MethodHandler.forMethod( method, this, this.getOperandPatternMatcher()));
+				this.methodHandlers.put( method,
+						method.isAnnotationPresent( Operands.class)? new OperandHandler( method, this.getOperandPatternMatcher())
+								: new OptionHandler( method, this));
 	}
 
 	@ Override
-	protected Result< MODEL> adapt( final SyntaxResult syntaxResult, final Map< String, ? extends List< String>> operands,
+	protected Result< MODEL> adapt( final SyntaxResult syntaxResult, final Map< String, List< String>> operands,
 			final Collection< ? extends ArgumentException> parseTimeExceptions) {
 		final Collection< ArgumentException> allExceptions = new LinkedHashSet<>( parseTimeExceptions);
 		final GenericAccessor basicAccessor = new GenericAccessor( syntaxResult, operands);
-		final Map< Method, Collection< ArgumentException>> decodeTimeExceptions = new HashMap<>();
+
+		final Map< Method, Collection< ? extends DecoderException>> decoderExceptions = new HashMap<>();
 		final Map< Method, Object> decoded = new HashMap<>();
 		for( final Entry< Method, MethodHandler> methodHandlerPair: this.methodHandlers.entrySet())
 			if( !DefaultAccessor.class.equals( methodHandlerPair.getKey().getDeclaringClass()))
 				try {
-					decoded.put( methodHandlerPair.getKey(), methodHandlerPair.getValue().decode( basicAccessor, parseTimeExceptions));
-				} catch( final FutureException exception) {
-					decodeTimeExceptions.put( methodHandlerPair.getKey(), exception.getPossibleCauses());
-					allExceptions.addAll( exception.getPossibleCauses());
+					decoded.put( methodHandlerPair.getKey(), methodHandlerPair.getValue().decode( basicAccessor));
+				} catch( final DecoderExceptions exception) {
+					decoderExceptions.put( methodHandlerPair.getKey(), exception.getDecoderExceptions());
+					allExceptions.addAll( exception.getDecoderExceptions());
 				}
 
 		return new AbstractResult< MODEL>( Collections.unmodifiableCollection( allExceptions), this.model.cast( Proxy.newProxyInstance(
@@ -107,8 +106,8 @@ public class ReflectParser< MODEL> extends InternationalizedParser< Result< MODE
 							InvocationTargetException {
 						if( DefaultAccessor.class.equals( method.getDeclaringClass()))
 							return method.invoke( basicAccessor, args);
-						if( decodeTimeExceptions.containsKey( method))
-							throw new UncheckedParserException( decodeTimeExceptions.get( method));
+						if( decoderExceptions.containsKey( method))
+							throw new UncheckedDecoderExceptions( decoderExceptions.get( method));
 						return decoded.get( method);
 					}
 				})));

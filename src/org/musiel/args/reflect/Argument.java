@@ -12,7 +12,18 @@
  */
 package org.musiel.args.reflect;
 
-class PreconditionException extends Exception {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-	private static final long serialVersionUID = -7974437451824092775L;
+import org.musiel.args.ArgumentPolicy;
+
+@ Target( ElementType.METHOD)
+@ Retention( RetentionPolicy.RUNTIME)
+@ Inherited
+public @ interface Argument {
+
+	public ArgumentPolicy value();
 }

@@ -16,8 +16,6 @@ import java.io.PrintStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.musiel.args.Option;
 import org.musiel.args.Parser;
@@ -63,8 +61,8 @@ public class GnuMonoTermPrinter implements HelpMessagePrinter {
 		}
 
 		@ Override
-		public String getOperandName( final String operandName) {
-			return operandName;
+		public String getOperandDescription( final String operandName) {
+			return null;
 		}
 	};
 
@@ -171,29 +169,11 @@ public class GnuMonoTermPrinter implements HelpMessagePrinter {
 		return builder.toString();
 	}
 
-	// IMPORTANT: OperandPattern is using a related pattern, any future change should be done in both classes
-	private static final Pattern NAME_OR_NOT_NAME = Pattern.compile( "^(?:([a-zA-Z\\-0-9]+)|([\\[\\]\\.\\(\\)\\|\\s]+))");
-
 	private Object constructOperandPart( final Parser< ?> parser, final Resource resource) {
 		final String pattern = parser.getOperandPattern();
 		if( pattern == null || "".equals( pattern.trim()))
 			return "";
-
-		final StringBuilder builder = new StringBuilder().append( ' ');
-		Matcher matcher;
-		for( CharSequence remaining = pattern.trim(); remaining.length() > 0; remaining =
-				remaining.subSequence( matcher.group().length(), remaining.length())) {
-			matcher = GnuMonoTermPrinter.NAME_OR_NOT_NAME.matcher( remaining);
-			if( !matcher.find())
-				throw new IllegalArgumentException( "invalid pattern: " + pattern);
-			if( matcher.group( 1) == null)
-				builder.append( matcher.group( 2));
-			else {
-				final String name = resource.getOperandName( matcher.group( 1));
-				builder.append( name != null? name: matcher.group( 1));
-			}
-		}
-		return builder.toString();
+		return " " + pattern;
 	}
 
 	private String constructOptionHead( final Option option, final Resource resource) {

@@ -10,23 +10,44 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.reflect.annotation;
+package org.musiel.args.reflect;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.math.BigInteger;
 
-@ Target( { ElementType.METHOD, ElementType.TYPE})
 @ Retention( RetentionPolicy.RUNTIME)
+@ Target( ElementType.METHOD)
 @ Inherited
-public @ interface Description {
+@ DecoderAnnotation( ShortValue.Decoder.class)
+public @ interface ShortValue {
 
-	/**
-	 * A human-readable description, typically used in printing help messages
-	 * 
-	 * @return
-	 */
-	public String value() default "";
+	public int radix() default 10;
+
+	public String min() default "" + Short.MIN_VALUE;
+
+	public String max() default "" + Short.MAX_VALUE;
+
+	static class Decoder extends IntegerNumberDecoder< Short> {
+
+		public Decoder( final int radix, final String min, final String max) {
+			super( radix, min, max);
+		}
+
+		public Decoder( final ShortValue annotation) {
+			this( annotation.radix(), annotation.min(), annotation.max());
+		}
+
+		public Decoder() {
+			this( 10, "" + Short.MIN_VALUE, "" + Short.MAX_VALUE);
+		}
+
+		@ Override
+		protected Short cast( final BigInteger decoded) {
+			return Short.valueOf( decoded.shortValue());
+		}
+	}
 }

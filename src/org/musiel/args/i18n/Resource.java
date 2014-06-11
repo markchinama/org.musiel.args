@@ -20,5 +20,5 @@ public interface Resource {
 
 	public String getOptionDescription( String optionName);
 
-	public String getOperandName( String operandName);
+	public String getOperandDescription( String operandName);
 }

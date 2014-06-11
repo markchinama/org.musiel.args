@@ -33,7 +33,6 @@ import org.musiel.args.operand.OperandException.Reason;
 
 public class OperandPattern {
 
-	// IMPORTANT: GnuMonoTermPrinter is using a related pattern, any future change should be done in both classes
 	private static final Pattern TOKENS = Pattern.compile( "^(?:(" //
 			+ "[a-zA-Z\\-0-9]+)" + "|(" // operand name: input-file, a, b
 			+ "\\[|\\]" + "|" // optional: [ input-file ]

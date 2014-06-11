@@ -12,23 +12,21 @@
  */
 package org.musiel.args.reflect;
 
-import java.util.Collection;
-import java.util.LinkedList;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import org.musiel.args.ArgumentException;
+@ Target( ElementType.METHOD)
+@ Retention( RetentionPolicy.RUNTIME)
+@ Inherited
+public @ interface Required {
 
-public class UncheckedParserException extends RuntimeException {
-
-	private static final long serialVersionUID = -5387317336480809166L;
-
-	private final Collection< ArgumentException> possibleCauses = new LinkedList<>();
-
-	public UncheckedParserException( final Collection< ArgumentException> possibleCauses) {
-		super( possibleCauses.isEmpty()? null: possibleCauses.iterator().next());
-		this.possibleCauses.addAll( possibleCauses);
-	}
-
-	public Collection< ArgumentException> getPossibleCauses() {
-		return this.possibleCauses;
-	}
+	/**
+	 * Whether the option is required.
+	 * 
+	 * @return
+	 */
+	public boolean value() default true;
 }

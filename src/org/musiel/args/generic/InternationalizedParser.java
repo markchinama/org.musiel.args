@@ -46,7 +46,7 @@ public abstract class InternationalizedParser< RESULT extends Result< ?>> extend
 	private String description = null;
 	private final Map< Option, String> optionDescriptions = new HashMap<>();
 	private final Map< Option, String> argumentNames = new HashMap<>();
-	private final Map< String, String> operandNames = new TreeMap<>();
+	private final Map< String, String> operandDescriptions = new TreeMap<>();
 
 	public String getDescription() {
 		return this.description;
@@ -88,18 +88,18 @@ public abstract class InternationalizedParser< RESULT extends Result< ?>> extend
 		this.argumentNames.put( option, argumentName);
 	}
 
-	public String getOperandName( final String operandId) {
+	public String getOperandDescription( final String operandName) {
 		final Collection< String> operandNames = this.getOperandNames();
-		if( operandNames == null || !operandNames.contains( operandId))
-			throw new IllegalArgumentException( "unknown operand: " + operandId);
-		return this.operandNames.get( operandId);
+		if( operandNames == null || !operandNames.contains( operandName))
+			throw new IllegalArgumentException( "unknown operand: " + operandName);
+		return this.operandDescriptions.get( operandName);
 	}
 
-	public void setOperandName( final String operandId, final String operandName) {
+	public void setOperandDescription( final String operandName, final String operandDescription) {
 		final Collection< String> operandNames = this.getOperandNames();
-		if( operandNames == null || !operandNames.contains( operandId))
-			throw new IllegalArgumentException( "unknown operand: " + operandId);
-		this.operandNames.put( operandId, operandName);
+		if( operandNames == null || !operandNames.contains( operandName))
+			throw new IllegalArgumentException( "unknown operand: " + operandName);
+		this.operandDescriptions.put( operandName, operandDescription);
 	}
 
 	@ Override
@@ -155,8 +155,8 @@ public abstract class InternationalizedParser< RESULT extends Result< ?>> extend
 		}
 
 		@ Override
-		public String getOperandName( final String operandName) {
-			return this.get( InternationalizedParser.this.getOperandName( operandName), "operand." + operandName);
+		public String getOperandDescription( final String operandName) {
+			return this.get( InternationalizedParser.this.getOperandDescription( operandName), "operand." + operandName);
 		}
 
 		private String get( final String direct, final String... keys) {

@@ -13,8 +13,10 @@
 package org.musiel.args.generic;
 
 import java.util.Collection;
+import java.util.LinkedList;
 
 import org.musiel.args.ArgumentException;
+import org.musiel.args.ArgumentExceptions;
 import org.musiel.args.Result;
 
 public class AbstractResult< ACCESSOR> implements Result< ACCESSOR> {
@@ -35,24 +37,32 @@ public class AbstractResult< ACCESSOR> implements Result< ACCESSOR> {
 
 	@ Override
 	public AbstractResult< ACCESSOR> check( final Collection< Class< ? extends ArgumentException>> exceptionTypes)
-			throws ArgumentException {
+			throws ArgumentExceptions {
+		final LinkedList< ArgumentException> exceptions = new LinkedList<>();
 		for( final Class< ? extends ArgumentException> exceptionType: exceptionTypes)
-			this.check( exceptionType);
+			for( final ArgumentException exception: this.exceptions)
+				if( exceptionType.isInstance( exception))
+					exceptions.add( exception);
+		if( !exceptions.isEmpty())
+			throw new ArgumentExceptions( exceptions);
 		return this;
 	}
 
 	@ Override
-	public AbstractResult< ACCESSOR> check( final Class< ? extends ArgumentException> exceptionType) throws ArgumentException {
+	public AbstractResult< ACCESSOR> check( final Class< ? extends ArgumentException> exceptionType) throws ArgumentExceptions {
+		final LinkedList< ArgumentException> exceptions = new LinkedList<>();
 		for( final ArgumentException exception: this.exceptions)
 			if( exceptionType.isInstance( exception))
-				throw exception;
+				exceptions.add( exception);
+		if( !exceptions.isEmpty())
+			throw new ArgumentExceptions( exceptions);
 		return this;
 	}
 
 	@ Override
-	public ACCESSOR check() throws ArgumentException {
+	public ACCESSOR check() throws ArgumentExceptions {
 		if( !this.exceptions.isEmpty())
-			throw this.exceptions.iterator().next();
+			throw new ArgumentExceptions( this.exceptions);
 		return this.accessor;
 	}
 

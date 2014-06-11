@@ -10,28 +10,34 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.reflect.annotation;
+package org.musiel.args.reflect;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.math.BigDecimal;
 
-/**
- * Defines option names
- * 
- * @author Bagana
- */
-@ Target( ElementType.METHOD)
 @ Retention( RetentionPolicy.RUNTIME)
+@ Target( ElementType.METHOD)
 @ Inherited
-public @ interface Option {
+@ DecoderAnnotation( BigDecimalValue.Decoder.class)
+public @ interface BigDecimalValue {
 
-	/**
-	 * Option names.
-	 * 
-	 * @return
-	 */
-	public String[] value() default {};
+	static class Decoder extends FloatNumberDecoder< BigDecimal> {
+
+		public Decoder( final BigDecimalValue annotation) {
+			this();
+		}
+
+		public Decoder() {
+			super();
+		}
+
+		@ Override
+		protected BigDecimal cast( final BigDecimal decoded) {
+			return decoded;
+		}
+	}
 }

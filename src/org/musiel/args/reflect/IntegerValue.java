@@ -10,18 +10,44 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing 
  * permissions and limitations under the License.
  */
-package org.musiel.args.reflect.annotation;
+package org.musiel.args.reflect;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.math.BigInteger;
 
-@ Target( ElementType.METHOD)
 @ Retention( RetentionPolicy.RUNTIME)
+@ Target( ElementType.METHOD)
 @ Inherited
-public @ interface Operands {
+@ DecoderAnnotation( IntegerValue.Decoder.class)
+public @ interface IntegerValue {
 
-	public String value() default "";
+	public int radix() default 10;
+
+	public String min() default "" + Integer.MIN_VALUE;
+
+	public String max() default "" + Integer.MAX_VALUE;
+
+	static class Decoder extends IntegerNumberDecoder< Integer> {
+
+		public Decoder( final int radix, final String min, final String max) {
+			super( radix, min, max);
+		}
+
+		public Decoder( final IntegerValue annotation) {
+			this( annotation.radix(), annotation.min(), annotation.max());
+		}
+
+		public Decoder() {
+			this( 10, "" + Integer.MIN_VALUE, "" + Integer.MAX_VALUE);
+		}
+
+		@ Override
+		protected Integer cast( final BigInteger decoded) {
+			return Integer.valueOf( decoded.intValue());
+		}
+	}
 }

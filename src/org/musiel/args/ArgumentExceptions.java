@@ -13,16 +13,25 @@
 package org.musiel.args;
 
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedList;
 
-public interface Result< ACCESSOR> {
+public class ArgumentExceptions extends Exception implements Iterable< ArgumentException> {
 
-	public Collection< ? extends ArgumentException> getErrors();
+	private static final long serialVersionUID = -6069628492739315962L;
 
-	public Result< ACCESSOR> check( Collection< Class< ? extends ArgumentException>> exceptionTypes) throws ArgumentExceptions;
+	private final Collection< ArgumentException> argumentExceptions = new LinkedList<>();
 
-	public Result< ACCESSOR> check( Class< ? extends ArgumentException> exceptionType) throws ArgumentExceptions;
+	public ArgumentExceptions( final Collection< ? extends ArgumentException> exceptions) {
+		this.argumentExceptions.addAll( exceptions);
+	}
 
-	public ACCESSOR check() throws ArgumentExceptions;
+	public Collection< ArgumentException> getArgumentExceptions() {
+		return this.argumentExceptions;
+	}
 
-	public ACCESSOR getAccessor();
+	@ Override
+	public Iterator< ArgumentException> iterator() {
+		return this.argumentExceptions.iterator();
+	}
 }
