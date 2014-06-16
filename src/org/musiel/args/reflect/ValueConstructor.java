@@ -21,7 +21,7 @@ interface ValueConstructor {
 
 	public boolean dependsOnContent();
 
-	public Object decode( String overrideDefaultValue, String... stringValues) throws DecoderExceptions;
+	public Object decode( String overrideDefaultValue, String environmentVariableName, String... stringValues) throws DecoderExceptions;
 }
 
 class NullConstructor implements ValueConstructor {
@@ -37,7 +37,7 @@ class NullConstructor implements ValueConstructor {
 	}
 
 	@ Override
-	public Object decode( final String overrideDefaultValue, final String... stringValues) {
+	public Object decode( final String overrideDefaultValue, final String environmentVariableName, final String... stringValues) {
 		return null;
 	}
 }
@@ -55,7 +55,7 @@ class ExistenceIndicator implements ValueConstructor {
 	}
 
 	@ Override
-	public Boolean decode( final String overrideDefaultValue, final String... stringValues) {
+	public Boolean decode( final String overrideDefaultValue, final String environmentVariableName, final String... stringValues) {
 		return Boolean.valueOf( stringValues.length > 0);
 	}
 }
@@ -82,10 +82,21 @@ class ObjectConstructor implements ValueConstructor {
 	}
 
 	@ Override
-	public Object decode( final String overrideDefaultValue, final String... stringValues) throws DecoderExceptions {
+	public Object decode( final String overrideDefaultValue, final String environmentVariableName, final String... stringValues)
+			throws DecoderExceptions {
 		try {
-			return stringValues.length >= 1 && stringValues[ 0] != null? this.decoder.decode( stringValues[ 0])
-					: overrideDefaultValue != null? this.decoder.decode( overrideDefaultValue): this.defaultValue;
+			if( stringValues.length >= 1 && stringValues[ 0] != null)
+				return this.decoder.decode( stringValues[ 0]);
+			final String environmentVariableValue = environmentVariableName == null? null: System.getenv( environmentVariableName);
+			if( environmentVariableValue != null)
+				try {
+					return this.decoder.decode( environmentVariableValue);
+				} catch( final DecoderException exception) {
+					throw new DecoderException( exception.getMessage()); // TODO explain in the message that the value was from env. var.
+				}
+			if( overrideDefaultValue != null)
+				return this.decoder.decode( overrideDefaultValue);
+			return this.defaultValue;
 		} catch( final DecoderException exception) {
 			throw new DecoderExceptions( exception);
 		}
@@ -116,13 +127,27 @@ class ArrayConstructor implements ValueConstructor {
 	}
 
 	@ Override
-	public Object decode( final String overrideDefaultValue, final String... stringValues) throws DecoderExceptions {
+	public Object decode( final String overrideDefaultValue, final String environmentVariableName, final String... stringValues)
+			throws DecoderExceptions {
 		final LinkedList< DecoderException> decoderExceptions = new LinkedList<>();
 		final Object array = Array.newInstance( this.componentType, stringValues.length);
 		for( int index = 0; index < stringValues.length; ++index)
 			try {
-				Array.set( array, index, stringValues[ index] != null? this.decoder.decode( stringValues[ index])
-						: overrideDefaultValue != null? this.decoder.decode( overrideDefaultValue): this.defaultValue);
+				if( stringValues[ index] != null)
+					Array.set( array, index, this.decoder.decode( stringValues[ index]));
+				else {
+					final String environmentVariableValue = environmentVariableName == null? null: System.getenv( environmentVariableName);
+					if( environmentVariableValue != null)
+						try {
+							Array.set( array, index, this.decoder.decode( environmentVariableValue));
+						} catch( final DecoderException exception) {
+							throw new DecoderException( exception.getMessage()); // TODO explain in the msg. that the val. was from env. var.
+						}
+					else if( overrideDefaultValue != null)
+						Array.set( array, index, this.decoder.decode( overrideDefaultValue));
+					else
+						Array.set( array, index, this.defaultValue);
+				}
 			} catch( final DecoderException exception) {
 				decoderExceptions.add( exception);
 			}

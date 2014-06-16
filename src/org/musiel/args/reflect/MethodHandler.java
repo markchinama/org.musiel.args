@@ -32,6 +32,7 @@ abstract class MethodHandler {
 
 	protected final ValueConstructor valueConstructor;
 	protected final String defaultValue;
+	protected final String environmentVariableName;
 
 	public MethodHandler( final Method method) {
 		final Decoder< ?> declaredDecoder = MethodHandler.getDeclaredDecoder( method);
@@ -45,11 +46,14 @@ abstract class MethodHandler {
 			if( "".equals( this.defaultValue))
 				throw new IllegalArgumentException( "@" + Default.class.getSimpleName() + " value must not be empty string");
 			try {
-				this.valueConstructor.decode( this.defaultValue);
+				this.valueConstructor.decode( null, null, this.defaultValue);
 			} catch( final DecoderExceptions exception) {
 				throw new IllegalArgumentException( exception);
 			}
 		}
+
+		this.environmentVariableName =
+				method.isAnnotationPresent( EnvironmentVariable.class)? method.getAnnotation( EnvironmentVariable.class).value(): null;
 	}
 
 	private static Decoder< ?> getDeclaredDecoder( final Method method) {
@@ -246,7 +250,8 @@ class OptionHandler extends MethodHandler {
 
 	@ Override
 	public Object decode( final DefaultAccessor basicAccessor) throws DecoderExceptions {
-		return this.valueConstructor.decode( this.defaultValue, basicAccessor.getArgumentsAsArray( this.optionName));
+		return this.valueConstructor.decode( this.defaultValue, this.environmentVariableName,
+				basicAccessor.getArgumentsAsArray( this.optionName));
 	}
 }
 
@@ -284,7 +289,7 @@ class OperandHandler extends MethodHandler {
 
 	@ Override
 	public Object decode( final DefaultAccessor basicAccessor) throws DecoderExceptions {
-		return this.valueConstructor.decode( this.defaultValue,
+		return this.valueConstructor.decode( this.defaultValue, this.environmentVariableName,
 				this.operandName == null? basicAccessor.getOperandsAsArray(): basicAccessor.getOperandsAsArray( this.operandName));
 	}
 }
