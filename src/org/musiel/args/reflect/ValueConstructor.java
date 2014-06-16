@@ -21,7 +21,7 @@ interface ValueConstructor {
 
 	public boolean dependsOnContent();
 
-	public Object decode( String... stringValues) throws DecoderExceptions;
+	public Object decode( String overrideDefaultValue, String... stringValues) throws DecoderExceptions;
 }
 
 class NullConstructor implements ValueConstructor {
@@ -37,7 +37,7 @@ class NullConstructor implements ValueConstructor {
 	}
 
 	@ Override
-	public Object decode( final String... stringValues) {
+	public Object decode( final String overrideDefaultValue, final String... stringValues) {
 		return null;
 	}
 }
@@ -55,7 +55,7 @@ class ExistenceIndicator implements ValueConstructor {
 	}
 
 	@ Override
-	public Boolean decode( final String... stringValues) {
+	public Boolean decode( final String overrideDefaultValue, final String... stringValues) {
 		return Boolean.valueOf( stringValues.length > 0);
 	}
 }
@@ -82,10 +82,10 @@ class ObjectConstructor implements ValueConstructor {
 	}
 
 	@ Override
-	public Object decode( final String... stringValues) throws DecoderExceptions {
+	public Object decode( final String overrideDefaultValue, final String... stringValues) throws DecoderExceptions {
 		try {
-			return this.decoder != null && stringValues.length >= 1 && stringValues[ 0] != null? this.decoder.decode( stringValues[ 0])
-					: this.defaultValue;
+			return stringValues.length >= 1 && stringValues[ 0] != null? this.decoder.decode( stringValues[ 0])
+					: overrideDefaultValue != null? this.decoder.decode( overrideDefaultValue): this.defaultValue;
 		} catch( final DecoderException exception) {
 			throw new DecoderExceptions( exception);
 		}
@@ -116,13 +116,13 @@ class ArrayConstructor implements ValueConstructor {
 	}
 
 	@ Override
-	public Object decode( final String... stringValues) throws DecoderExceptions {
+	public Object decode( final String overrideDefaultValue, final String... stringValues) throws DecoderExceptions {
 		final LinkedList< DecoderException> decoderExceptions = new LinkedList<>();
 		final Object array = Array.newInstance( this.componentType, stringValues.length);
 		for( int index = 0; index < stringValues.length; ++index)
 			try {
-				Array.set( array, index, this.decoder != null && stringValues[ index] != null? this.decoder.decode( stringValues[ index])
-						: this.defaultValue);
+				Array.set( array, index, stringValues[ index] != null? this.decoder.decode( stringValues[ index])
+						: overrideDefaultValue != null? this.decoder.decode( overrideDefaultValue): this.defaultValue);
 			} catch( final DecoderException exception) {
 				decoderExceptions.add( exception);
 			}

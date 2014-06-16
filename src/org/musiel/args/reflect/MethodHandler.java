@@ -31,12 +31,25 @@ import org.musiel.args.operand.OperandPattern;
 abstract class MethodHandler {
 
 	protected final ValueConstructor valueConstructor;
+	protected final String defaultValue;
 
 	public MethodHandler( final Method method) {
 		final Decoder< ?> declaredDecoder = MethodHandler.getDeclaredDecoder( method);
 		this.valueConstructor =
 				declaredDecoder == null? MethodHandler.getDefaultConstructor( method): MethodHandler.checkAndReturnConstructor( method,
 						declaredDecoder);
+
+		// load default value
+		this.defaultValue = method.isAnnotationPresent( Default.class)? method.getAnnotation( Default.class).value(): null;
+		if( this.defaultValue != null) {
+			if( "".equals( this.defaultValue))
+				throw new IllegalArgumentException( "@" + Default.class.getSimpleName() + " value must not be empty string");
+			try {
+				this.valueConstructor.decode( this.defaultValue);
+			} catch( final DecoderExceptions exception) {
+				throw new IllegalArgumentException( exception);
+			}
+		}
 	}
 
 	private static Decoder< ?> getDeclaredDecoder( final Method method) {
@@ -233,7 +246,7 @@ class OptionHandler extends MethodHandler {
 
 	@ Override
 	public Object decode( final DefaultAccessor basicAccessor) throws DecoderExceptions {
-		return this.valueConstructor.decode( basicAccessor.getArgumentsAsArray( this.optionName));
+		return this.valueConstructor.decode( this.defaultValue, basicAccessor.getArgumentsAsArray( this.optionName));
 	}
 }
 
@@ -271,7 +284,7 @@ class OperandHandler extends MethodHandler {
 
 	@ Override
 	public Object decode( final DefaultAccessor basicAccessor) throws DecoderExceptions {
-		return this.valueConstructor.decode( this.operandName == null? basicAccessor.getOperandsAsArray(): basicAccessor
-				.getOperandsAsArray( this.operandName));
+		return this.valueConstructor.decode( this.defaultValue,
+				this.operandName == null? basicAccessor.getOperandsAsArray(): basicAccessor.getOperandsAsArray( this.operandName));
 	}
 }
