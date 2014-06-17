@@ -45,10 +45,10 @@ public class DecoderException extends ArgumentException {
 	}
 
 	@ Override
-	protected String[] getLocalizeParameters( final Locale locale) {
+	protected String[] getLocalizedParameters( final Locale locale) {
 		if( this.cause == null)
-			return super.getLocalizeParameters( locale);
-		final String[] params = super.getLocalizeParameters( locale);
+			return super.getLocalizedParameters( locale);
+		final String[] params = super.getLocalizedParameters( locale);
 		final String[] causeAdded = Arrays.copyOf( params, params.length + 1);
 		causeAdded[ causeAdded.length - 1] = this.cause.getMessage( locale);
 		return causeAdded;

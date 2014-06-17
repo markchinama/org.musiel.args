@@ -19,7 +19,7 @@ import java.util.List;
  * 
  * @author Bagana
  * 
- * @param <RESULT_ACCESSOR>
+ * @param <RESULT>
  */
 public interface Parser< RESULT extends Result< ?>> {
 

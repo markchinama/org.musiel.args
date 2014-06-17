@@ -24,6 +24,8 @@ import org.musiel.args.Option;
  * his/her own unique syntax for the program being written. This is supported by abstracting the syntax by this interface and leaving the
  * variety for concrete implementations.
  * 
+ * @see PosixSyntax
+ * @see GnuSyntax
  * @author Bagana
  */
 public interface Syntax {
@@ -55,7 +57,7 @@ public interface Syntax {
 	 * 
 	 * <p>
 	 * Note that when requesting an argument list for an option, arguments specified for all its aliases are returned. To get only those
-	 * for a particular alias, one has to filter by his/herself according to {@link #getNames(Option)}.
+	 * for a particular alias, one has to filter it according to {@link #getNames(Option)}.
 	 * </p>
 	 * 
 	 * @author Bagana
@@ -80,8 +82,8 @@ public interface Syntax {
 		 * </p>
 		 * 
 		 * <p>
-		 * Options NOT defined in the option set are also possible to be retrieved, in which case at least one error should have been added
-		 * into {@link #getErrors()}.
+		 * Undefined options are also possible to be retrieved, in which case at least one error should have been added into
+		 * {@link #getErrors()}.
 		 * </p>
 		 * 
 		 * @param option
@@ -100,8 +102,8 @@ public interface Syntax {
 		 * </p>
 		 * 
 		 * <p>
-		 * Options NOT defined in the option set are also possible to be retrieved, in which case at least one error should have been added
-		 * into {@link #getErrors()}.
+		 * Undefined options are also possible to be retrieved, in which case at least one error should have been added into
+		 * {@link #getErrors()}.
 		 * </p>
 		 * 
 		 * @param option

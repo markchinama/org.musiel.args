@@ -12,21 +12,45 @@
  */
 package org.musiel.args;
 
+/**
+ * Indicates if an option can be given with or without an argument, or both.
+ * 
+ * @author Bagana
+ */
 public enum ArgumentPolicy {
 
+	/**
+	 * The option does not accept an argument
+	 */
 	NONE( false, false),
 
+	/**
+	 * The option accepts an argument, but not required
+	 */
 	OPTIONAL( true, false),
 
+	/**
+	 * The option requires an argument
+	 */
 	REQUIRED( true, true);
 
 	private final boolean accepted;
 	private final boolean required;
 
+	/**
+	 * Whether the option accepts an argument (optional or mandatory).
+	 * 
+	 * @return
+	 */
 	public boolean isAccepted() {
 		return this.accepted;
 	}
 
+	/**
+	 * Whether the option-argument is required.
+	 * 
+	 * @return
+	 */
 	public boolean isRequired() {
 		return this.required;
 	}

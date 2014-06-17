@@ -13,12 +13,18 @@
 package org.musiel.args;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 
+/**
+ * A collection of {@link ArgumentException}. Used when throwing multiple {@link ArgumentException} at once is needed.
+ * 
+ * @author Bagana
+ */
 public class ArgumentExceptions extends Exception implements Iterable< ArgumentException> {
 
-	private static final long serialVersionUID = -6069628492739315962L;
+	private static final long serialVersionUID = -4664872800886363165L;
 
 	private final Collection< ArgumentException> argumentExceptions = new LinkedList<>();
 
@@ -27,11 +33,11 @@ public class ArgumentExceptions extends Exception implements Iterable< ArgumentE
 	}
 
 	public Collection< ArgumentException> getArgumentExceptions() {
-		return this.argumentExceptions;
+		return Collections.unmodifiableCollection( this.argumentExceptions);
 	}
 
 	@ Override
 	public Iterator< ArgumentException> iterator() {
-		return this.argumentExceptions.iterator();
+		return this.getArgumentExceptions().iterator();
 	}
 }

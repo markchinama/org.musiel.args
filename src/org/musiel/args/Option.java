@@ -32,7 +32,7 @@ public interface Option {
 
 	/**
 	 * All names for this option. MUST NOT be empty. It is preferable to use a set implementation that keeps certain order, like
-	 * {@link LinkedHashSet}, since help messages might show a name list according to it.
+	 * {@link LinkedHashSet}, since help message printers might construct a name list according to it.
 	 * 
 	 * @return
 	 */

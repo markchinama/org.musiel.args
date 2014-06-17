@@ -84,6 +84,11 @@ public class GenericAccessor implements DefaultAccessor {
 	}
 
 	@ Override
+	public String getOperand() {
+		return this.getSingle( this.getOperands());
+	}
+
+	@ Override
 	public List< String> getOperands( final String operandName) {
 		List< String> list = this.operandMap.get( operandName);
 		if( list == null)

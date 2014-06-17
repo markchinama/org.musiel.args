@@ -2,6 +2,8 @@ org.musiel.args
 
 #A Command Line Argument Parser
 
+Bagana, π day, 2014
+
 
 
 ##Example in 15 Seconds
@@ -17,16 +19,38 @@ interface Options {
 }
 ```
 
-Then in your main class:
+Then in your main function,
 
 ```java
-Options options = ReflectParser.parse( Options.class, args);
+Options options = ReflectParser.parse( Options.class, args).check();
 ```
 
-will give you the parse result in the interface **YOU** defined!
+gives you the parse result in the interface **YOU** defined!
 
-`options.help()` indicates whether `--help` option is specified, while `options.output()` gives you a `File` object whose path name was 
-given in `--output` option.
+`options.help()` indicates whether `--help` option is given, while `options.output()` returns a `File` object whose path name was given 
+in `--output` option.
+
+
+
+##Example without an Interface
+
+For real simple use cases, even the pre-defining of an interface can be skipped. For example, for command line:
+
+```shell
+apply-template -o output.html -f --log-level WARN input.xml
+```
+
+following **ONE** line will parse it into a `GenericResult` model:
+
+```java
+GenericResult result = new GenericParser().parse( args);
+// then use the parse result
+result.getArgument( "-o");          // returns "output.html"
+result.isOccurred( "-f");           // returns true
+result.isOccurred( "-g");           // returns false
+result.getArgument( "--log-level"); // returns "WARN"
+result.getOperand();                // returns "input.xml"
+```
 
 
 

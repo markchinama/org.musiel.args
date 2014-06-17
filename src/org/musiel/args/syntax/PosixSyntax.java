@@ -135,11 +135,15 @@ public class PosixSyntax implements Syntax {
 				return;
 			}
 
-			if( this.openOptionName != null && ( this.openOption != null || !arg.startsWith( "-") || arg.equals( "-"))) {
-				this.push( this.openOptionName, arg);
+			if( this.openOptionName != null) {
+				if( this.openOption != null || !arg.startsWith( "-") || arg.equals( "-")) {
+					this.push( this.openOptionName, arg);
+					this.openOptionName = null;
+					this.openOption = null;
+					return;
+				}
+				this.push( this.openOptionName, null);
 				this.openOptionName = null;
-				this.openOption = null;
-				return;
 			}
 
 			if( "--".equals( arg)) {

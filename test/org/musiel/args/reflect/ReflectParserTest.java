@@ -20,10 +20,6 @@ import org.musiel.args.DefaultAccessor;
 import org.musiel.args.Result;
 import org.musiel.args.generic.AbstractParser;
 import org.musiel.args.generic.AbstractParserTest;
-import org.musiel.args.reflect.OperandPattern;
-import org.musiel.args.reflect.Operands;
-import org.musiel.args.reflect.Option;
-import org.musiel.args.reflect.ReflectParser;
 
 public class ReflectParserTest extends AbstractParserTest {
 
@@ -31,7 +27,7 @@ public class ReflectParserTest extends AbstractParserTest {
 	}
 
 	@ Test( expected = IllegalArgumentException.class)
-	public void classesFail() {
+	public void testClass() {
 		new ReflectParser<>( ClassNotInterface.class);
 	}
 
@@ -39,7 +35,7 @@ public class ReflectParserTest extends AbstractParserTest {
 	}
 
 	@ Test( expected = IllegalArgumentException.class)
-	public void enumsFail() {
+	public void testEnum() {
 		new ReflectParser<>( EnumNotInterface.class);
 	}
 
@@ -47,7 +43,7 @@ public class ReflectParserTest extends AbstractParserTest {
 	}
 
 	@ Test
-	public void emptyInterfacePasses() {
+	public void testEmptyInterface() {
 		new ReflectParser<>( EmptyInterface.class).parse();
 	}
 

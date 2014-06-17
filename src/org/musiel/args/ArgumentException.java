@@ -19,42 +19,98 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * User errors like missing options or unknown arguments.
+ * Indicates an error from user input, such as an unknown option or an unexpected option-argument.
  * 
  * @author Bagana
  */
-public class ArgumentException extends Exception {
+public abstract class ArgumentException extends Exception {
 
-	private static final long serialVersionUID = 1892846941097605037L;
+	private static final long serialVersionUID = -1088285368268583084L;
 
-	protected final boolean useResourceBundle;
+	private final boolean useResourceBundle;
+	// this field is never used if useResourceBundle is true
+	private final String message;
+	// these fields are never used if useResourceBundle is false
+	private final String messageBundleBase;
+	private final String messageKey;
+	private final String[] messageParameters;
 
-	protected final String message;
-
-	protected final String messageBundleBase;
-	protected final String messageKey;
-	protected final String[] messageParameters;
-
-	public ArgumentException( final String message) {
+	/**
+	 * Construct an {@link ArgumentException} with specified cause and message. {@link #getMessage(Locale)} with any locale parameter
+	 * returns the same message, that is given here.
+	 * 
+	 * @param cause
+	 * @param message
+	 */
+	public ArgumentException( final Throwable cause, final String message) {
+		super( cause);
 		this.useResourceBundle = false;
-
 		this.message = message;
-
 		this.messageBundleBase = null;
 		this.messageKey = null;
 		this.messageParameters = null;
 	}
 
-	public ArgumentException( final String messageBundleBase, final String messageKey, final Object... messageParameters) {
+	/**
+	 * Construct an {@link ArgumentException} with specified message. {@link #getMessage(Locale)} with any locale parameter returns the
+	 * same message, that is given here.
+	 * 
+	 * @param message
+	 */
+	public ArgumentException( final String message) {
+		this( null, message);
+	}
+
+	/**
+	 * Construct an {@link ArgumentException} with specified cause and message, which is given in resource bundle base, key, and
+	 * parameters.
+	 * 
+	 * <p>
+	 * Note that the parameters are converted to {@link String}s at construction time, if their {@link Object#toString()} values change in
+	 * future, it does not affect the return value of {@link #getMessage()} or {@link #getMessage(Locale)}.
+	 * </p>
+	 * 
+	 * <p>
+	 * If one or all of the parameters need to vary according to the locale, {@link #getLocalizedParameters(Locale)} should be overridden to
+	 * do the pre-processing.
+	 * </p>
+	 * 
+	 * @param cause
+	 * @param messageBundleBase
+	 * @param messageKey
+	 * @param messageParameters
+	 */
+	public ArgumentException( final Throwable cause, final String messageBundleBase, final String messageKey,
+			final Object... messageParameters) {
+		super( cause);
 		this.useResourceBundle = true;
-
 		this.message = null;
-
 		this.messageBundleBase = messageBundleBase;
 		this.messageKey = messageKey;
-		this.messageParameters = new String[ messageParameters == null? 0: messageParameters.length];
+		this.messageParameters = new String[ messageParameters.length];
 		for( int index = this.messageParameters.length - 1; index >= 0; --index)
-			this.messageParameters[ index] = messageParameters[ index] == null? "null": messageParameters[ index].toString();
+			this.messageParameters[ index] = messageParameters[ index] != null? messageParameters[ index].toString(): "null";
+	}
+
+	/**
+	 * Construct an {@link ArgumentException} with specified message given in resource bundle base, key, and parameters.
+	 * 
+	 * <p>
+	 * Note that the parameters are converted to {@link String}s at construction time, if their {@link Object#toString()} values change in
+	 * future, it does not affect the return value of {@link #getMessage()} or {@link #getMessage(Locale)}.
+	 * </p>
+	 * 
+	 * <p>
+	 * If one or all of the parameters need to vary according to the locale, {@link #getLocalizedParameters(Locale)} should be overridden to
+	 * do the pre-processing.
+	 * </p>
+	 * 
+	 * @param messageBundleBase
+	 * @param messageKey
+	 * @param messageParameters
+	 */
+	public ArgumentException( final String messageBundleBase, final String messageKey, final Object... messageParameters) {
+		this( null, messageBundleBase, messageKey, messageParameters);
 	}
 
 	@ Override
@@ -62,33 +118,27 @@ public class ArgumentException extends Exception {
 		return this.getMessage( Locale.getDefault());
 	}
 
+	/**
+	 * Get the error message in specified locale.
+	 * 
+	 * @param locale
+	 * @return
+	 */
 	public String getMessage( final Locale locale) {
 		if( !this.useResourceBundle)
 			return this.message;
 		if( this.messageBundleBase == null || this.messageKey == null)
-			return null;
-		return ArgumentException.getMessageFromResourceBundle( this.messageBundleBase, locale, this.messageKey,
-				this.getLocalizeParameters( locale));
-	}
-
-	protected String[] getLocalizeParameters( Locale locale) {
-		return this.messageParameters;
-	}
-
-	protected static String getMessageFromResourceBundle( final String base, final Locale locale, final String key, final String... params) {
+			return this.getFailsafeMessage();
 		try {
-			final String template = ResourceBundle.getBundle( base, locale).getString( key);
-			return ArgumentException.substitute( template, params);
+			return ArgumentException.substitute( ResourceBundle.getBundle( this.messageBundleBase, locale).getString( this.messageKey),
+					this.getLocalizedParameters( locale));
 		} catch( final MissingResourceException exception) {
-			final StringBuilder fallback = new StringBuilder().append( '<').append( base).append( ">.").append( key).append( '(');
-			for( int index = 0; index < params.length; ++index) {
-				if( index > 0)
-					fallback.append( ", ");
-				fallback.append( params[ index]);
-			}
-			fallback.append( ')');
-			return fallback.toString();
+			return this.getFailsafeMessage();
 		}
+	}
+
+	protected String[] getLocalizedParameters( final Locale locale) {
+		return this.messageParameters;
 	}
 
 	private static final Pattern SUBSTITUTION_POINT_PATTERN = Pattern.compile( "\\{[1-9]\\d*\\}");
@@ -108,5 +158,17 @@ public class ArgumentException extends Exception {
 		}
 		result.append( template, matched, template.length());
 		return result.toString();
+	}
+
+	protected String getFailsafeMessage() {
+		final StringBuilder message =
+				new StringBuilder().append( '<').append( this.messageBundleBase).append( ">.").append( this.messageKey).append( '(');
+		for( int index = 0; index < this.messageParameters.length; ++index) {
+			if( index > 0)
+				message.append( ", ");
+			message.append( this.messageParameters[ index]);
+		}
+		message.append( ')');
+		return message.toString();
 	}
 }

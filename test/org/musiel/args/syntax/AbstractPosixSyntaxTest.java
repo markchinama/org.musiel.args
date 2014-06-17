@@ -19,18 +19,13 @@ import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.musiel.args.ArgumentException;
 import org.musiel.args.ArgumentPolicy;
 import org.musiel.args.Option;
 import org.musiel.args.syntax.Syntax.SyntaxResult;
 
 public abstract class AbstractPosixSyntaxTest {
-
-	@ Rule
-	public final ExpectedException exceptions = ExpectedException.none();
 
 	protected PosixSyntax syntax;
 
@@ -109,17 +104,17 @@ public abstract class AbstractPosixSyntaxTest {
 		Assert.assertFalse( this.syntax.isJointArgumentsAllowed());
 	}
 
+	@ Test
+	public void testValidNames() {
+		this.syntax.validate( this.option( "-a", "-3", "-A"));
+	}
+
 	protected void testInvalidOption( final Option option) {
 		try {
 			this.syntax.validate( option);
 			Assert.fail();
 		} catch( final IllegalArgumentException exception) {
 		}
-	}
-
-	@ Test
-	public void testValidNames() {
-		this.syntax.validate( this.option( "-a", "-3", "-A"));
 	}
 
 	@ Test
@@ -130,15 +125,15 @@ public abstract class AbstractPosixSyntaxTest {
 
 	@ Test
 	public void testOptionalArgumentDisallowed() {
-		this.testInvalidOption( this.option( false, true, ArgumentPolicy.OPTIONAL, "-a", "-3"));
 		this.syntax.validate( this.option( false, true, ArgumentPolicy.REQUIRED, "-a", "-3"));
+		this.testInvalidOption( this.option( false, true, ArgumentPolicy.OPTIONAL, "-a", "-3"));
 	}
 
 	@ Test
 	public void testOptionalArgumentAllowed() {
 		this.syntax.setOptionalArgumentsAllowed( true);
-		this.syntax.validate( this.option( false, true, ArgumentPolicy.OPTIONAL, "-a", "-3"));
 		this.syntax.validate( this.option( false, true, ArgumentPolicy.REQUIRED, "-a", "-3"));
+		this.syntax.validate( this.option( false, true, ArgumentPolicy.OPTIONAL, "-a", "-3"));
 	}
 
 	protected final Option optionA = this.option( "-a");
