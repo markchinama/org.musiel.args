@@ -18,10 +18,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -42,18 +40,15 @@ abstract class MethodHandler {
 				declaredDecoder == null? MethodHandler.getDefaultConstructor( method): MethodHandler.checkAndReturnConstructor( method,
 						declaredDecoder);
 
-		// load default value
 		this.defaultValue = method.isAnnotationPresent( Default.class)? method.getAnnotation( Default.class).value(): null;
-		if( this.defaultValue != null) {
-			if( "".equals( this.defaultValue))
-				throw new IllegalArgumentException( "@" + Default.class.getSimpleName() + " value must not be empty string");
-			try {
-				this.valueConstructor.decode( null, null, this.defaultValue);
-			} catch( final DecoderExceptions exception) {
-				throw new IllegalArgumentException( exception);
-			}
-		}
+		if( this.defaultValue != null && !"".equals( this.defaultValue))
+			this.valueConstructor.decode( new ExceptionHandler< DecoderException>() {
 
+				@ Override
+				public void handle( final DecoderException exception) {
+					throw new IllegalArgumentException( MethodHandler.this.defaultValue + " is invalid");
+				}
+			}, this.defaultValue, null);
 		this.environmentVariableName =
 				method.isAnnotationPresent( EnvironmentVariable.class)? method.getAnnotation( EnvironmentVariable.class).value(): null;
 	}
@@ -188,7 +183,7 @@ abstract class MethodHandler {
 		return new ArrayConstructor( declaredDecoder, componentType, PrimitiveType.forPrimitiveType( componentType).getDefaultValue());
 	}
 
-	public abstract Object decode( final DefaultAccessor basicAccessor) throws DecoderExceptions;
+	public abstract Object decode( final DefaultAccessor basicAccessor, ExceptionHandler< DecoderException> exceptionHandler);
 }
 
 class OptionHandler extends MethodHandler {
@@ -251,17 +246,15 @@ class OptionHandler extends MethodHandler {
 	}
 
 	@ Override
-	public Object decode( final DefaultAccessor basicAccessor) throws DecoderExceptions {
-		try {
-			return this.valueConstructor.decode( this.defaultValue, this.environmentVariableName,
-					basicAccessor.getArgumentsAsArray( this.optionName));
-		} catch( final DecoderExceptions exceptions) {
-			final Collection< DecoderException> wrappedExceptions = new LinkedList<>();
-			for( final DecoderException exception: exceptions)
-				wrappedExceptions.add( new DecoderException( exception, MethodHandler.class.getPackage().getName() + ".exceptions",
-						"illegal-value.option", this.optionName));
-			throw new DecoderExceptions( wrappedExceptions);
-		}
+	public Object decode( final DefaultAccessor basicAccessor, final ExceptionHandler< DecoderException> exceptionHandler) {
+		return this.valueConstructor.decode( new ExceptionHandler< DecoderException>() {
+
+			@ Override
+			public void handle( final DecoderException exception) {
+				exceptionHandler.handle( new DecoderException( exception, MethodHandler.class.getPackage().getName() + ".exceptions",
+						"illegal-value.option", OptionHandler.this.optionName));
+			}
+		}, this.defaultValue, this.environmentVariableName, basicAccessor.getArgumentsAsArray( this.optionName));
 	}
 }
 
@@ -298,17 +291,17 @@ class OperandHandler extends MethodHandler {
 	}
 
 	@ Override
-	public Object decode( final DefaultAccessor basicAccessor) throws DecoderExceptions {
-		try {
-			return this.valueConstructor.decode( this.defaultValue, this.environmentVariableName,
-					this.operandName == null? basicAccessor.getOperandsAsArray(): basicAccessor.getOperandsAsArray( this.operandName));
-		} catch( final DecoderExceptions exceptions) {
-			final Collection< DecoderException> wrappedExceptions = new LinkedList<>();
-			for( final DecoderException exception: exceptions)
-				wrappedExceptions.add( this.operandName == null? new DecoderException( exception, MethodHandler.class.getPackage().getName()
-						+ ".exceptions", "illegal-value.operand.unnamed"): new DecoderException( exception, MethodHandler.class.getPackage()
-						.getName() + ".exceptions", "illegal-value.operand.named", this.operandName));
-			throw new DecoderExceptions( wrappedExceptions);
-		}
+	public Object decode( final DefaultAccessor basicAccessor, final ExceptionHandler< DecoderException> exceptionHandler) {
+		return this.valueConstructor.decode( new ExceptionHandler< DecoderException>() {
+
+			@ Override
+			public void handle( final DecoderException exception) {
+				exceptionHandler.handle( OperandHandler.this.operandName == null? new DecoderException( exception, MethodHandler.class
+						.getPackage().getName() + ".exceptions", "illegal-value.operand.unnamed"): new DecoderException( exception,
+						MethodHandler.class.getPackage().getName() + ".exceptions", "illegal-value.operand.named",
+						OperandHandler.this.operandName));
+			}
+		}, this.defaultValue, this.environmentVariableName,
+				this.operandName == null? basicAccessor.getOperandsAsArray(): basicAccessor.getOperandsAsArray( this.operandName));
 	}
 }

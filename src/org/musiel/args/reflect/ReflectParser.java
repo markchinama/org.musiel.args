@@ -84,21 +84,22 @@ public class ReflectParser< MODEL> extends InternationalizedParser< Result< MODE
 	@ Override
 	protected Result< MODEL> adapt( final SyntaxResult syntaxResult, final Map< String, List< String>> operands,
 			final Collection< ? extends ArgumentException> parseTimeExceptions) {
-		final Collection< ArgumentException> allExceptions = new LinkedHashSet<>( parseTimeExceptions);
+		final Collection< ArgumentException> exceptions = new LinkedHashSet<>( parseTimeExceptions);
 		final GenericAccessor basicAccessor = new GenericAccessor( syntaxResult, operands);
 
-		final Map< Method, Collection< ? extends DecoderException>> decoderExceptions = new HashMap<>();
 		final Map< Method, Object> decoded = new HashMap<>();
 		for( final Entry< Method, MethodHandler> methodHandlerPair: this.methodHandlers.entrySet())
 			if( !DefaultAccessor.class.equals( methodHandlerPair.getKey().getDeclaringClass()))
-				try {
-					decoded.put( methodHandlerPair.getKey(), methodHandlerPair.getValue().decode( basicAccessor));
-				} catch( final DecoderExceptions exception) {
-					decoderExceptions.put( methodHandlerPair.getKey(), exception.getDecoderExceptions());
-					allExceptions.addAll( exception.getDecoderExceptions());
-				}
+				decoded.put( methodHandlerPair.getKey(),
+						methodHandlerPair.getValue().decode( basicAccessor, new ExceptionHandler< DecoderException>() {
 
-		return new AbstractResult< MODEL>( Collections.unmodifiableCollection( allExceptions), this.model.cast( Proxy.newProxyInstance(
+							@ Override
+							public void handle( DecoderException exception) {
+								exceptions.add( exception);
+							}
+						}));
+
+		return new AbstractResult< MODEL>( Collections.unmodifiableCollection( exceptions), this.model.cast( Proxy.newProxyInstance(
 				this.model.getClassLoader(), new Class< ?>[]{ this.model}, new InvocationHandler() {
 
 					@ Override
@@ -106,8 +107,6 @@ public class ReflectParser< MODEL> extends InternationalizedParser< Result< MODE
 							InvocationTargetException {
 						if( DefaultAccessor.class.equals( method.getDeclaringClass()))
 							return method.invoke( basicAccessor, args);
-						if( decoderExceptions.containsKey( method))
-							throw new UncheckedDecoderExceptions( decoderExceptions.get( method));
 						return decoded.get( method);
 					}
 				})));

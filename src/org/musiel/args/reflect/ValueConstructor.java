@@ -13,7 +13,6 @@
 package org.musiel.args.reflect;
 
 import java.lang.reflect.Array;
-import java.util.LinkedList;
 
 abstract class ValueConstructor {
 
@@ -39,23 +38,34 @@ abstract class ValueConstructor {
 		return this.dependsOnContent;
 	}
 
-	public abstract Object decode( String overrideDefaultValue, String environmentVariableName, String... stringValues)
-			throws DecoderExceptions;
+	public abstract Object decode( ExceptionHandler< ? super DecoderException> exceptionHandler, String overrideDefaultValue,
+			String environmentVariableName, String... stringValues);
 
-	protected Object decodeSingle( final String overrideDefaultValue, final String environmentVariableName, final String value)
-			throws DecoderException {
+	protected Object decodeSingle( final String overrideDefaultValue, final String environmentVariableName, final String value,
+			final ExceptionHandler< ? super DecoderException> exceptionHandler) {
 		if( value != null)
-			return this.decoder.decode( value);
+			try {
+				return this.decoder.decode( value);
+			} catch( final DecoderException exception) {
+				exceptionHandler.handle( exception);
+				return this.defaultValue;
+			}
 		final String envVarValue = environmentVariableName == null? null: System.getenv( environmentVariableName);
 		if( envVarValue != null)
 			try {
 				return this.decoder.decode( envVarValue);
 			} catch( final DecoderException exception) {
-				throw new DecoderException( exception, ValueConstructor.class.getPackage().getName() + ".exceptions",
-						"illegal-value.from-env-var", environmentVariableName);
+				exceptionHandler.handle( new DecoderException( exception, ValueConstructor.class.getPackage().getName() + ".exceptions",
+						"illegal-value.from-env-var", environmentVariableName)); // continue decoding with default values
+				return this.defaultValue;
 			}
 		if( overrideDefaultValue != null)
-			return this.decoder.decode( overrideDefaultValue);
+			try {
+				return this.decoder.decode( overrideDefaultValue);
+			} catch( final DecoderException exception) {
+				exceptionHandler.handle( exception);
+				return this.defaultValue;
+			}
 		return this.defaultValue;
 	}
 }
@@ -67,7 +77,8 @@ class NullConstructor extends ValueConstructor {
 	}
 
 	@ Override
-	public Object decode( final String overrideDefaultValue, final String environmentVariableName, final String... stringValues) {
+	public Object decode( final ExceptionHandler< ? super DecoderException> exceptionHandler, final String overrideDefaultValue,
+			final String environmentVariableName, final String... stringValues) {
 		return null;
 	}
 }
@@ -79,7 +90,8 @@ class ExistenceIndicator extends ValueConstructor {
 	}
 
 	@ Override
-	public Boolean decode( final String overrideDefaultValue, final String environmentVariableName, final String... stringValues) {
+	public Object decode( final ExceptionHandler< ? super DecoderException> exceptionHandler, final String overrideDefaultValue,
+			final String environmentVariableName, final String... stringValues) {
 		return Boolean.valueOf( stringValues.length > 0);
 	}
 }
@@ -91,13 +103,10 @@ class ObjectConstructor extends ValueConstructor {
 	}
 
 	@ Override
-	public Object decode( final String overrideDefaultValue, final String environmentVariableName, final String... stringValues)
-			throws DecoderExceptions {
-		try {
-			return this.decodeSingle( overrideDefaultValue, environmentVariableName, stringValues.length < 1? null: stringValues[ 0]);
-		} catch( final DecoderException exception) {
-			throw new DecoderExceptions( exception);
-		}
+	public Object decode( final ExceptionHandler< ? super DecoderException> exceptionHandler, final String overrideDefaultValue,
+			final String environmentVariableName, final String... stringValues) {
+		return this.decodeSingle( overrideDefaultValue, environmentVariableName, stringValues.length < 1? null: stringValues[ 0],
+				exceptionHandler);
 	}
 }
 
@@ -111,18 +120,12 @@ class ArrayConstructor extends ValueConstructor {
 	}
 
 	@ Override
-	public Object decode( final String overrideDefaultValue, final String environmentVariableName, final String... stringValues)
-			throws DecoderExceptions {
-		final LinkedList< DecoderException> decoderExceptions = new LinkedList<>();
+	public Object decode( final ExceptionHandler< ? super DecoderException> exceptionHandler, final String overrideDefaultValue,
+			final String environmentVariableName, final String... stringValues) {
 		final Object array = Array.newInstance( this.componentType, stringValues.length);
 		for( int index = 0; index < stringValues.length; ++index)
-			try {
-				Array.set( array, index, this.decodeSingle( overrideDefaultValue, environmentVariableName, stringValues[ index]));
-			} catch( final DecoderException exception) {
-				decoderExceptions.add( exception);
-			}
-		if( !decoderExceptions.isEmpty())
-			throw new DecoderExceptions( decoderExceptions);
+			Array.set( array, index,
+					this.decodeSingle( overrideDefaultValue, environmentVariableName, stringValues[ index], exceptionHandler));
 		return array;
 	}
 }
