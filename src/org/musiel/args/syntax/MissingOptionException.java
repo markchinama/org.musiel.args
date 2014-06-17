@@ -17,7 +17,7 @@ public class MissingOptionException extends OptionException {
 	private static final long serialVersionUID = -4413478798737006270L;
 
 	public MissingOptionException( final String optionName) {
-		super( optionName, MissingOptionException.class.getPackage().getName() + ".exception",
+		super( optionName, MissingOptionException.class.getPackage().getName() + ".exceptions",
 				MissingOptionException.class.getSimpleName(), optionName);
 	}
 }

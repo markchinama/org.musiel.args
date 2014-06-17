@@ -66,7 +66,8 @@ public @ interface BooleanValue {
 				return Boolean.TRUE;
 			if( this.falseValues.contains( stringToSearch))
 				return Boolean.FALSE;
-			throw new DecoderException( "not a boolean value: " + string);
+			throw new DecoderException( BooleanValue.class.getPackage().getName() + ".exceptions", "invalid-value", "a boolean value",
+					string);
 		}
 	}
 }

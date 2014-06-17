@@ -18,8 +18,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -250,8 +252,16 @@ class OptionHandler extends MethodHandler {
 
 	@ Override
 	public Object decode( final DefaultAccessor basicAccessor) throws DecoderExceptions {
-		return this.valueConstructor.decode( this.defaultValue, this.environmentVariableName,
-				basicAccessor.getArgumentsAsArray( this.optionName));
+		try {
+			return this.valueConstructor.decode( this.defaultValue, this.environmentVariableName,
+					basicAccessor.getArgumentsAsArray( this.optionName));
+		} catch( final DecoderExceptions exceptions) {
+			final Collection< DecoderException> wrappedExceptions = new LinkedList<>();
+			for( final DecoderException exception: exceptions)
+				wrappedExceptions.add( new DecoderException( exception, MethodHandler.class.getPackage().getName() + ".exceptions",
+						"illegal-value.option", this.optionName));
+			throw new DecoderExceptions( wrappedExceptions);
+		}
 	}
 }
 
@@ -289,7 +299,16 @@ class OperandHandler extends MethodHandler {
 
 	@ Override
 	public Object decode( final DefaultAccessor basicAccessor) throws DecoderExceptions {
-		return this.valueConstructor.decode( this.defaultValue, this.environmentVariableName,
-				this.operandName == null? basicAccessor.getOperandsAsArray(): basicAccessor.getOperandsAsArray( this.operandName));
+		try {
+			return this.valueConstructor.decode( this.defaultValue, this.environmentVariableName,
+					this.operandName == null? basicAccessor.getOperandsAsArray(): basicAccessor.getOperandsAsArray( this.operandName));
+		} catch( final DecoderExceptions exceptions) {
+			final Collection< DecoderException> wrappedExceptions = new LinkedList<>();
+			for( final DecoderException exception: exceptions)
+				wrappedExceptions.add( this.operandName == null? new DecoderException( exception, MethodHandler.class.getPackage().getName()
+						+ ".exceptions", "illegal-value.operand.unnamed"): new DecoderException( exception, MethodHandler.class.getPackage()
+						.getName() + ".exceptions", "illegal-value.operand.named", this.operandName));
+			throw new DecoderExceptions( wrappedExceptions);
+		}
 	}
 }

@@ -27,13 +27,13 @@ public class ArgumentException extends Exception {
 
 	private static final long serialVersionUID = 1892846941097605037L;
 
-	private final boolean useResourceBundle;
+	protected final boolean useResourceBundle;
 
-	private final String message;
+	protected final String message;
 
-	private final String messageBundleBase;
-	private final String messageKey;
-	private final String[] messageParameters;
+	protected final String messageBundleBase;
+	protected final String messageKey;
+	protected final String[] messageParameters;
 
 	public ArgumentException( final String message) {
 		this.useResourceBundle = false;
@@ -67,13 +67,18 @@ public class ArgumentException extends Exception {
 			return this.message;
 		if( this.messageBundleBase == null || this.messageKey == null)
 			return null;
-		return getMessageFromResourceBundle( this.messageBundleBase, locale, this.messageKey, this.messageParameters);
+		return ArgumentException.getMessageFromResourceBundle( this.messageBundleBase, locale, this.messageKey,
+				this.getLocalizeParameters( locale));
 	}
 
-	private static String getMessageFromResourceBundle( final String base, final Locale locale, final String key, final String... params) {
+	protected String[] getLocalizeParameters( Locale locale) {
+		return this.messageParameters;
+	}
+
+	protected static String getMessageFromResourceBundle( final String base, final Locale locale, final String key, final String... params) {
 		try {
 			final String template = ResourceBundle.getBundle( base, locale).getString( key);
-			return substitute( template, params);
+			return ArgumentException.substitute( template, params);
 		} catch( final MissingResourceException exception) {
 			final StringBuilder fallback = new StringBuilder().append( '<').append( base).append( ">.").append( key).append( '(');
 			for( int index = 0; index < params.length; ++index) {
@@ -90,7 +95,7 @@ public class ArgumentException extends Exception {
 
 	private static String substitute( final String template, final String... params) {
 		final StringBuilder result = new StringBuilder();
-		final Matcher matcher = SUBSTITUTION_POINT_PATTERN.matcher( template);
+		final Matcher matcher = ArgumentException.SUBSTITUTION_POINT_PATTERN.matcher( template);
 		int matched;
 		for( matched = 0; matcher.find( matched); matched = matcher.end()) {
 			result.append( template, matched, matcher.start());

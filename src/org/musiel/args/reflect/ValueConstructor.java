@@ -15,25 +15,55 @@ package org.musiel.args.reflect;
 import java.lang.reflect.Array;
 import java.util.LinkedList;
 
-interface ValueConstructor {
+abstract class ValueConstructor {
 
-	public boolean expectsMany();
+	private final boolean expectsMany;
+	private final boolean dependsOnContent;
+	private final Decoder< ?> decoder;
+	private final Object defaultValue;
 
-	public boolean dependsOnContent();
-
-	public Object decode( String overrideDefaultValue, String environmentVariableName, String... stringValues) throws DecoderExceptions;
-}
-
-class NullConstructor implements ValueConstructor {
-
-	@ Override
-	public boolean expectsMany() {
-		return false;
+	public ValueConstructor( final boolean expectsMany, final boolean dependsOnContent, final Decoder< ?> decoder,
+			final Object defaultValue) {
+		super();
+		this.expectsMany = expectsMany;
+		this.dependsOnContent = dependsOnContent;
+		this.decoder = decoder;
+		this.defaultValue = defaultValue;
 	}
 
-	@ Override
+	public boolean expectsMany() {
+		return this.expectsMany;
+	}
+
 	public boolean dependsOnContent() {
-		return false;
+		return this.dependsOnContent;
+	}
+
+	public abstract Object decode( String overrideDefaultValue, String environmentVariableName, String... stringValues)
+			throws DecoderExceptions;
+
+	protected Object decodeSingle( final String overrideDefaultValue, final String environmentVariableName, final String value)
+			throws DecoderException {
+		if( value != null)
+			return this.decoder.decode( value);
+		final String envVarValue = environmentVariableName == null? null: System.getenv( environmentVariableName);
+		if( envVarValue != null)
+			try {
+				return this.decoder.decode( envVarValue);
+			} catch( final DecoderException exception) {
+				throw new DecoderException( exception, ValueConstructor.class.getPackage().getName() + ".exceptions",
+						"illegal-value.from-env-var", environmentVariableName);
+			}
+		if( overrideDefaultValue != null)
+			return this.decoder.decode( overrideDefaultValue);
+		return this.defaultValue;
+	}
+}
+
+class NullConstructor extends ValueConstructor {
+
+	public NullConstructor() {
+		super( false, false, null, null);
 	}
 
 	@ Override
@@ -42,16 +72,10 @@ class NullConstructor implements ValueConstructor {
 	}
 }
 
-class ExistenceIndicator implements ValueConstructor {
+class ExistenceIndicator extends ValueConstructor {
 
-	@ Override
-	public boolean expectsMany() {
-		return false;
-	}
-
-	@ Override
-	public boolean dependsOnContent() {
-		return false;
+	public ExistenceIndicator() {
+		super( false, false, null, null);
 	}
 
 	@ Override
@@ -60,70 +84,30 @@ class ExistenceIndicator implements ValueConstructor {
 	}
 }
 
-class ObjectConstructor implements ValueConstructor {
-
-	private final Decoder< ?> decoder;
-	private final Object defaultValue;
+class ObjectConstructor extends ValueConstructor {
 
 	public ObjectConstructor( final Decoder< ?> decoder, final Object defaultValue) {
-		super();
-		this.decoder = decoder;
-		this.defaultValue = defaultValue;
-	}
-
-	@ Override
-	public boolean expectsMany() {
-		return false;
-	}
-
-	@ Override
-	public boolean dependsOnContent() {
-		return true;
+		super( false, true, decoder, defaultValue);
 	}
 
 	@ Override
 	public Object decode( final String overrideDefaultValue, final String environmentVariableName, final String... stringValues)
 			throws DecoderExceptions {
 		try {
-			if( stringValues.length >= 1 && stringValues[ 0] != null)
-				return this.decoder.decode( stringValues[ 0]);
-			final String environmentVariableValue = environmentVariableName == null? null: System.getenv( environmentVariableName);
-			if( environmentVariableValue != null)
-				try {
-					return this.decoder.decode( environmentVariableValue);
-				} catch( final DecoderException exception) {
-					throw new DecoderException( exception.getMessage()); // TODO explain in the message that the value was from env. var.
-				}
-			if( overrideDefaultValue != null)
-				return this.decoder.decode( overrideDefaultValue);
-			return this.defaultValue;
+			return this.decodeSingle( overrideDefaultValue, environmentVariableName, stringValues.length < 1? null: stringValues[ 0]);
 		} catch( final DecoderException exception) {
 			throw new DecoderExceptions( exception);
 		}
 	}
 }
 
-class ArrayConstructor implements ValueConstructor {
+class ArrayConstructor extends ValueConstructor {
 
-	private final Decoder< ?> decoder;
 	private final Class< ?> componentType;
-	private final Object defaultValue;
 
 	public ArrayConstructor( final Decoder< ?> decoder, final Class< ?> componentType, final Object defaultValue) {
-		super();
-		this.decoder = decoder;
+		super( true, true, decoder, defaultValue);
 		this.componentType = componentType;
-		this.defaultValue = defaultValue;
-	}
-
-	@ Override
-	public boolean expectsMany() {
-		return true;
-	}
-
-	@ Override
-	public boolean dependsOnContent() {
-		return true;
 	}
 
 	@ Override
@@ -133,21 +117,7 @@ class ArrayConstructor implements ValueConstructor {
 		final Object array = Array.newInstance( this.componentType, stringValues.length);
 		for( int index = 0; index < stringValues.length; ++index)
 			try {
-				if( stringValues[ index] != null)
-					Array.set( array, index, this.decoder.decode( stringValues[ index]));
-				else {
-					final String environmentVariableValue = environmentVariableName == null? null: System.getenv( environmentVariableName);
-					if( environmentVariableValue != null)
-						try {
-							Array.set( array, index, this.decoder.decode( environmentVariableValue));
-						} catch( final DecoderException exception) {
-							throw new DecoderException( exception.getMessage()); // TODO explain in the msg. that the val. was from env. var.
-						}
-					else if( overrideDefaultValue != null)
-						Array.set( array, index, this.decoder.decode( overrideDefaultValue));
-					else
-						Array.set( array, index, this.defaultValue);
-				}
+				Array.set( array, index, this.decodeSingle( overrideDefaultValue, environmentVariableName, stringValues[ index]));
 			} catch( final DecoderException exception) {
 				decoderExceptions.add( exception);
 			}

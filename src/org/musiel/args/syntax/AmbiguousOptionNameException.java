@@ -17,7 +17,7 @@ public class AmbiguousOptionNameException extends OptionException {
 	private static final long serialVersionUID = -1006033348922155735L;
 
 	public AmbiguousOptionNameException( final String optionName) {
-		super( optionName, AmbiguousOptionNameException.class.getPackage().getName() + ".exception", AmbiguousOptionNameException.class
+		super( optionName, AmbiguousOptionNameException.class.getPackage().getName() + ".exceptions", AmbiguousOptionNameException.class
 				.getSimpleName(), optionName);
 	}
 }

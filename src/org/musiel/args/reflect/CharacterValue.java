@@ -35,7 +35,8 @@ public @ interface CharacterValue {
 		@ Override
 		public Character decode( final String string) throws DecoderException {
 			if( string.length() != 1)
-				throw new DecoderException( "length != 1: " + string);
+				throw new DecoderException( CharacterValue.class.getPackage().getName() + ".exceptions", "invalid-value", "a character",
+						string);
 			return string.charAt( 0);
 		}
 	}

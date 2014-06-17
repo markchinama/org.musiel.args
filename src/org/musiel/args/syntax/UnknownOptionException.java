@@ -17,7 +17,7 @@ public class UnknownOptionException extends OptionException {
 	private static final long serialVersionUID = 4865889399962759213L;
 
 	public UnknownOptionException( final String optionName) {
-		super( optionName, UnknownOptionException.class.getPackage().getName() + ".exception",
+		super( optionName, UnknownOptionException.class.getPackage().getName() + ".exceptions",
 				UnknownOptionException.class.getSimpleName(), optionName);
 	}
 }

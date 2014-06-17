@@ -19,6 +19,7 @@ abstract class IntegerNumberDecoder< T> implements Decoder< T> {
 	private final int radix;
 	private final BigInteger min;
 	private final BigInteger max;
+	private final String rangeInString;
 
 	protected IntegerNumberDecoder( final int radix, final String min, final String max) {
 		super();
@@ -27,6 +28,7 @@ abstract class IntegerNumberDecoder< T> implements Decoder< T> {
 		this.radix = radix;
 		this.min = min == null || min.equals( "")? null: new BigInteger( min);
 		this.max = max == null || max.equals( "")? null: new BigInteger( max);
+		this.rangeInString = ( this.min != null? "[" + this.min: "(-∞") + ", " + ( this.max != null? this.max + "]": "+∞)");
 	}
 
 	@ Override
@@ -34,11 +36,12 @@ abstract class IntegerNumberDecoder< T> implements Decoder< T> {
 		try {
 			final BigInteger decoded = new BigInteger( string, this.radix);
 			if( this.min != null && decoded.compareTo( this.min) < 0 || this.max != null && decoded.compareTo( this.max) > 0)
-				throw new DecoderException( "value out of range " + ( this.min != null? "[" + this.min: "(-∞") + ", "
-						+ ( this.max != null? this.max + "]": "+∞)") + ": " + string);
+				throw new DecoderException( IntegerNumberDecoder.class.getPackage().getName() + ".exceptions", "constraint",
+						"value out of range " + this.rangeInString, string);
 			return this.cast( decoded);
 		} catch( final NumberFormatException formatException) {
-			throw new DecoderException( "not an integer number: " + string);
+			throw new DecoderException( IntegerNumberDecoder.class.getPackage().getName() + ".exceptions", "invalid-value",
+					"an integer number", string);
 		}
 	}
 

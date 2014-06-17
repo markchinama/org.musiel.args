@@ -73,19 +73,19 @@ public @ interface FileValue {
 		public File decode( final String string) throws DecoderException {
 			final File file = new File( string);
 			if( this.mustExist && !file.exists())
-				throw new DecoderException( "file " + string + " does not exist");
+				throw new DecoderException( FileValue.class.getPackage().getName() + ".exceptions", "constraint", "does not exist", string);
 			if( this.mustNotExist && file.exists())
-				throw new DecoderException( "file " + string + " exists");
+				throw new DecoderException( FileValue.class.getPackage().getName() + ".exceptions", "constraint", "already exists", string);
 			if( this.mustBeFile && !file.isFile())
-				throw new DecoderException( "file " + string + " is not a file");
+				throw new DecoderException( FileValue.class.getPackage().getName() + ".exceptions", "constraint", "not a file", string);
 			if( this.mustBeDirectory && !file.isDirectory())
-				throw new DecoderException( "file " + string + " is not a directory");
+				throw new DecoderException( FileValue.class.getPackage().getName() + ".exceptions", "constraint", "not a directory", string);
 			if( this.mustBeReadable && !file.canRead())
-				throw new DecoderException( "file " + string + " is not readable");
+				throw new DecoderException( FileValue.class.getPackage().getName() + ".exceptions", "constraint", "not readable", string);
 			if( this.mustBeWritable && !file.canWrite())
-				throw new DecoderException( "file " + string + " is not writable");
+				throw new DecoderException( FileValue.class.getPackage().getName() + ".exceptions", "constraint", "not writable", string);
 			if( this.mustBeExecutable && !file.canExecute())
-				throw new DecoderException( "file " + string + " is not executable");
+				throw new DecoderException( FileValue.class.getPackage().getName() + ".exceptions", "constraint", "not executable", string);
 			return file;
 		}
 	}

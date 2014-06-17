@@ -12,17 +12,45 @@
  */
 package org.musiel.args.reflect;
 
+import java.util.Arrays;
+import java.util.Locale;
+
 import org.musiel.args.ArgumentException;
 
 public class DecoderException extends ArgumentException {
 
 	private static final long serialVersionUID = 7996264514095528394L;
 
+	private final DecoderException cause;
+
 	public DecoderException( final String message) {
 		super( message);
+		this.cause = null;
 	}
 
 	public DecoderException( final String messageBundleBase, final String messageKey, final Object... messageParameters) {
 		super( messageBundleBase, messageKey, messageParameters);
+		this.cause = null;
+	}
+
+	public DecoderException( final DecoderException cause, final String message) {
+		super( message + ": " + cause.getMessage());
+		this.cause = cause;
+	}
+
+	public DecoderException( final DecoderException cause, final String messageBundleBase, final String messageKey,
+			final Object... messageParameters) {
+		super( messageBundleBase, messageKey, messageParameters);
+		this.cause = cause;
+	}
+
+	@ Override
+	protected String[] getLocalizeParameters( final Locale locale) {
+		if( this.cause == null)
+			return super.getLocalizeParameters( locale);
+		final String[] params = super.getLocalizeParameters( locale);
+		final String[] causeAdded = Arrays.copyOf( params, params.length + 1);
+		causeAdded[ causeAdded.length - 1] = this.cause.getMessage( locale);
+		return causeAdded;
 	}
 }

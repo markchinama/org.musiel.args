@@ -29,7 +29,7 @@ public class OperandException extends ArgumentException {
 	}
 
 	public OperandException( final Reason reason) {
-		super( OperandException.class.getPackage().getName() + ".exception", OperandException.class.getSimpleName() + "." + reason.name());
+		super( OperandException.class.getPackage().getName() + ".exceptions", OperandException.class.getSimpleName() + "." + reason.name());
 		this.reason = reason;
 	}
 }

@@ -17,7 +17,7 @@ public class ArgumentRequiredException extends OptionException {
 	private static final long serialVersionUID = -3407545039110045783L;
 
 	public ArgumentRequiredException( final String optionName) {
-		super( optionName, ArgumentRequiredException.class.getPackage().getName() + ".exception", ArgumentRequiredException.class
+		super( optionName, ArgumentRequiredException.class.getPackage().getName() + ".exceptions", ArgumentRequiredException.class
 				.getSimpleName(), optionName);
 	}
 }

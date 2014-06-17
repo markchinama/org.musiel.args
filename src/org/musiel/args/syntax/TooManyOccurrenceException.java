@@ -25,7 +25,7 @@ public class TooManyOccurrenceException extends OptionException {
 	private final Collection< String> additionalOptionNames = new HashSet<>();
 
 	public TooManyOccurrenceException( final String optionName, final List< String> additionalOptionNames) {
-		super( optionName, TooManyOccurrenceException.class.getPackage().getName() + ".exception", TooManyOccurrenceException.class
+		super( optionName, TooManyOccurrenceException.class.getPackage().getName() + ".exceptions", TooManyOccurrenceException.class
 				.getSimpleName(), TooManyOccurrenceException.optionNamesToString( optionName, additionalOptionNames));
 		this.additionalOptionNames.addAll( additionalOptionNames);
 		this.additionalOptionNames.remove( optionName);

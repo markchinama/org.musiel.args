@@ -17,7 +17,7 @@ public class UnexpectedArgumentException extends OptionException {
 	private static final long serialVersionUID = 2664650578522089550L;
 
 	public UnexpectedArgumentException( final String optionName) {
-		super( optionName, UnexpectedArgumentException.class.getPackage().getName() + ".exception", UnexpectedArgumentException.class
+		super( optionName, UnexpectedArgumentException.class.getPackage().getName() + ".exceptions", UnexpectedArgumentException.class
 				.getSimpleName(), optionName);
 	}
 }

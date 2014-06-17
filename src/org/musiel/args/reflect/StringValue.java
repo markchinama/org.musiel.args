@@ -42,7 +42,8 @@ public @ interface StringValue {
 		@ Override
 		public String decode( final String string) throws DecoderException {
 			if( !this.pattern.matcher( string).matches())
-				throw new DecoderException( "value does not match regular expression " + this.pattern + ": " + string);
+				throw new DecoderException( StringValue.class.getPackage().getName() + ".exceptions", "constraint",
+						"value does not match regular expression " + this.pattern, string);
 			return string;
 		}
 	}

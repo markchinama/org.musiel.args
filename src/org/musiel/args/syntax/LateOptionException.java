@@ -17,7 +17,7 @@ public class LateOptionException extends OptionException {
 	private static final long serialVersionUID = 1191416853153580272L;
 
 	public LateOptionException( final String optionName) {
-		super( optionName, LateOptionException.class.getPackage().getName() + ".exception", LateOptionException.class.getSimpleName(),
+		super( optionName, LateOptionException.class.getPackage().getName() + ".exceptions", LateOptionException.class.getSimpleName(),
 				optionName);
 	}
 }

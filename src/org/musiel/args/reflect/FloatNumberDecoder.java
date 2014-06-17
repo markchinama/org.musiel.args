@@ -22,7 +22,8 @@ abstract class FloatNumberDecoder< T> implements Decoder< T> {
 			final BigDecimal decoded = new BigDecimal( string);
 			return this.cast( decoded);
 		} catch( final NumberFormatException formatException) {
-			throw new DecoderException( "not a floating point number: " + string);
+			throw new DecoderException( FloatNumberDecoder.class.getPackage().getName() + ".exceptions", "invalid-value",
+					"a floating point number", string);
 		}
 	}
 

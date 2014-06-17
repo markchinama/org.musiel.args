@@ -13,9 +13,10 @@
 package org.musiel.args.reflect;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedList;
 
-class DecoderExceptions extends Exception {
+class DecoderExceptions extends Exception implements Iterable< DecoderException> {
 
 	private static final long serialVersionUID = -2526882939402478634L;
 
@@ -31,5 +32,10 @@ class DecoderExceptions extends Exception {
 
 	public DecoderExceptions( final Collection< ? extends DecoderException> exceptions) {
 		this.decoderExceptions.addAll( exceptions);
+	}
+
+	@ Override
+	public Iterator< DecoderException> iterator() {
+		return this.getDecoderExceptions().iterator();
 	}
 }
