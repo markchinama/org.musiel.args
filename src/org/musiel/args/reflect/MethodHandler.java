@@ -18,6 +18,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -122,6 +123,7 @@ abstract class MethodHandler {
 		MethodHandler.DEFAULTS.put( BigDecimal.class, new ObjectConstructor( new BigDecimalValue.Decoder(), null));
 		MethodHandler.DEFAULTS.put( String.class, new ObjectConstructor( new StringValue.Decoder(), null));
 		MethodHandler.DEFAULTS.put( File.class, new ObjectConstructor( new FileValue.Decoder(), null));
+		MethodHandler.DEFAULTS.put( URL.class, new ObjectConstructor( new UrlValue.Decoder(), null));
 
 		// void[] is not possible
 		MethodHandler.DEFAULTS.put( boolean[].class, new ArrayConstructor( new BooleanValue.Decoder(), boolean.class, false));
@@ -147,6 +149,7 @@ abstract class MethodHandler {
 		MethodHandler.DEFAULTS.put( BigDecimal[].class, new ArrayConstructor( new BigDecimalValue.Decoder(), BigDecimal.class, null));
 		MethodHandler.DEFAULTS.put( String[].class, new ArrayConstructor( new StringValue.Decoder(), String.class, null));
 		MethodHandler.DEFAULTS.put( File[].class, new ArrayConstructor( new FileValue.Decoder(), File.class, null));
+		MethodHandler.DEFAULTS.put( URL[].class, new ArrayConstructor( new UrlValue.Decoder(), URL.class, null));
 	}
 
 	private static ValueConstructor checkAndReturnConstructor( final Method method, final Decoder< ?> declaredDecoder) {
